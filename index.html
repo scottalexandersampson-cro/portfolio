@@ -4,807 +4,1395 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Scott Sampson — Growth Portfolio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <style>
-/* ── RESET & BASE ─────────────────────────────────── */
+:root {
+  --bg:       #F4F3F0;
+  --bg2:      #ECEAE5;
+  --white:    #FFFFFF;
+  --ink:      #1A1A18;
+  --ink2:     #4A4A46;
+  --ink3:     #8A8A84;
+  --teal:     #4DB8A0;
+  --teal-d:   #2E8B78;
+  --teal-l:   #D6F0EA;
+  --amber:    #C8923A;
+  --red:      #C0392B;
+  --red-l:    #FDECEA;
+  --border:   rgba(26,26,24,0.09);
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-  --bg:     #F4F3F0;
-  --bg2:    #ECEAE5;
-  --white:  #FFFFFF;
-  --ink:    #1A1A18;
-  --ink2:   #4A4A46;
-  --ink3:   #8A8A84;
-  --teal:   #4DB8A0;
-  --teal-d: #2E8B78;
-  --teal-l: #D6F0EA;
-  --amber:  #C8923A;
-  --red:    #C0392B;
-  --red-l:  #FDECEA;
-  --border: #E0E0DC;
-  --sans: -apple-system, 'Helvetica Neue', Arial, sans-serif;
-  --serif: Georgia, 'Times New Roman', serif;
-}
-
-html { scroll-behavior: smooth; }
-body { background: #2C2C2A; font-family: var(--sans); color: var(--ink); line-height: 1.5; }
-
-/* ── TOP BAR ──────────────────────────────────────── */
-.topbar {
-  position: sticky; top: 0; z-index: 200;
-  background: var(--ink);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 28px; height: 52px;
-  border-bottom: 1px solid rgba(77,184,160,.2);
-}
-.topbar-brand { display: flex; align-items: baseline; gap: 10px; }
-.topbar-name { font-family: var(--serif); font-size: 16px; color: #fff; font-weight: normal; letter-spacing: -.01em; }
-.topbar-role { font-size: 10px; color: rgba(255,255,255,.35); letter-spacing: .08em; text-transform: uppercase; }
-.topbar-nav { display: flex; gap: 4px; }
-.nav-pill {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: rgba(255,255,255,.08); border: none;
-  color: rgba(255,255,255,.45); font-size: 11px; font-weight: 600;
-  cursor: pointer; transition: all .15s; font-family: var(--sans);
-  display: flex; align-items: center; justify-content: center;
-}
-.nav-pill:hover { background: rgba(255,255,255,.18); color: #fff; }
-.nav-pill.active { background: var(--teal); color: var(--ink); }
-.topbar-right { display: flex; align-items: center; gap: 14px; }
-.slide-counter { font-size: 11px; color: rgba(255,255,255,.3); letter-spacing: .04em; }
-
-/* ── SLIDE VIEWPORT ───────────────────────────────── */
-.viewport { overflow: hidden; position: relative; }
-.slides-track {
-  display: flex;
-  transition: transform .35s cubic-bezier(.4,0,.2,1);
-}
-
-/* ── INDIVIDUAL SLIDE ─────────────────────────────── */
-.slide {
-  flex-shrink: 0;
-  width: 100vw;
+body {
+  font-family: 'DM Sans', sans-serif;
   background: var(--bg);
-  display: grid;
-  grid-template-rows: auto 1fr auto;
+  color: var(--ink);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── NAV ── */
+.nav {
+  background: var(--ink);
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.nav-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.nav-brand .name {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  color: #fff;
+  font-weight: 600;
+}
+.nav-brand .role {
+  font-size: 11px;
+  color: rgba(255,255,255,.4);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.nav-slides {
+  display: flex;
+  gap: 4px;
+}
+.nav-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,.1);
+  color: rgba(255,255,255,.5);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nav-dot:hover { background: rgba(255,255,255,.2); color: #fff; }
+.nav-dot.active { background: var(--teal); color: var(--ink); }
+.nav-arrows {
+  display: flex;
+  gap: 6px;
+}
+.arrow-btn {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,.15);
+  background: transparent;
+  color: rgba(255,255,255,.6);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.arrow-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+.arrow-btn:disabled { opacity: .3; cursor: default; }
+
+/* ── SLIDE CONTAINER ── */
+.slides-wrap {
+  flex: 1;
+  position: relative;
   overflow: hidden;
 }
-
-/* ── SLIDE HEADER ─────────────────────────────────── */
-.s-hdr {
-  background: var(--ink);
-  padding: 10px 24px 12px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto auto;
-  gap: 0;
-  position: relative;
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: 20px 24px 0;
 }
-.s-num {
-  font-size: 9px; font-weight: 600; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--teal);
-  grid-column: 1; grid-row: 1;
-  padding-top: 2px;
+.slide.active {
+  display: flex;
+  animation: slideIn .25s ease both;
 }
-.s-title {
-  font-family: var(--serif); font-size: clamp(18px, 2.2vw, 26px);
-  color: #fff; line-height: 1.1; letter-spacing: -.02em;
-  grid-column: 1; grid-row: 2; padding: 3px 0 2px;
-}
-.s-sub {
-  font-size: 10px; color: var(--ink3); font-style: italic;
-  grid-column: 1; grid-row: 3;
-}
-.s-badge {
-  grid-column: 2; grid-row: 1 / 3; align-self: center;
-  background: rgba(77,184,160,.14);
-  border: 1px solid rgba(77,184,160,.3);
-  border-radius: 20px; padding: 5px 14px;
-  font-size: 9px; font-weight: 700;
-  color: var(--teal-d); letter-spacing: .06em; text-transform: uppercase;
-  white-space: nowrap; margin-left: 20px;
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
-/* ── SLIDE BODY ───────────────────────────────────── */
-.s-body {
+/* ── SLIDE HEADER ── */
+.slide-header {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.slide-header-left {}
+.slide-num {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--teal);
+  margin-bottom: 3px;
+}
+.slide-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -.02em;
+  line-height: 1.2;
+}
+.slide-subtitle {
+  font-size: 12px;
+  color: var(--ink3);
+  margin-top: 3px;
+  font-weight: 300;
+}
+.slide-company {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--teal-l);
+  border: 1px solid rgba(77,184,160,.25);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--teal-d);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+/* ── SLIDE BODY ── */
+.slide-body {
+  flex: 1;
   display: grid;
-  grid-template-columns: 1fr 240px;
-  gap: 12px;
-  padding: 12px 16px 8px;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
   min-height: 0;
 }
 
-/* ── CHART PANEL ──────────────────────────────────── */
-.chart-panel {
+/* ── CHART AREA ── */
+.chart-area {
   background: var(--white);
-  border-radius: 10px; border: 1px solid var(--border);
-  padding: 12px 14px 10px;
-  display: flex; flex-direction: column; min-height: 0;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 16px 18px 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
 }
-.chart-lbl {
-  font-size: 8px; font-weight: 700; letter-spacing: .09em;
-  text-transform: uppercase; color: var(--ink3);
-  margin-bottom: 6px; flex-shrink: 0;
+.chart-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink3);
+  margin-bottom: 8px;
 }
-.chart-canvas-wrap { flex: 1; min-height: 0; position: relative; }
-canvas { display: block; width: 100% !important; height: 100% !important; }
-.legend-row {
-  display: flex; gap: 12px; flex-wrap: wrap;
-  margin-top: 7px; padding-top: 7px;
+.chart-canvas-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ── ANNOTATION LEGEND ── */
+.annotation-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid var(--border);
+}
+.ann-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--ink3);
+}
+.ann-line {
+  width: 14px;
+  height: 2px;
+  border-top: 2px dashed;
   flex-shrink: 0;
 }
-.leg-item { display: flex; align-items: center; gap: 5px; font-size: 9px; color: var(--ink3); }
-.leg-swatch { width: 16px; height: 2px; flex-shrink: 0; }
-.ann-note {
-  margin-top: 6px; padding: 5px 9px; border-radius: 5px;
-  font-size: 8.5px; font-weight: 500; line-height: 1.45; flex-shrink: 0;
-}
-.ann-red { background: var(--red-l); border: 1px solid rgba(192,57,43,.22); color: var(--red); }
 
-/* ── CONTEXT PANEL ────────────────────────────────── */
-.ctx-panel { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+/* ── CONTEXT PANEL ── */
+.context-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
 .insight-box {
-  background: var(--ink); border-radius: 9px;
-  padding: 11px 13px; flex-shrink: 0;
+  background: var(--ink);
+  border-radius: 10px;
+  padding: 14px 16px;
+  color: #fff;
 }
-.insight-lbl {
-  font-size: 8px; font-weight: 700; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--teal); margin-bottom: 5px;
+.insight-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--teal);
+  margin-bottom: 6px;
 }
-.insight-txt {
-  font-size: 9.5px; color: rgba(232,232,228,.88);
-  line-height: 1.6; font-weight: 300;
+.insight-text {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: rgba(255,255,255,.88);
+  font-weight: 300;
 }
-.insight-txt strong { color: #fff; font-weight: 600; }
+.insight-text strong {
+  color: #fff;
+  font-weight: 500;
+}
 
-.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex-shrink: 0; }
+.context-bullets {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  flex: 1;
+}
+.cb-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink3);
+  margin-bottom: 10px;
+}
+.cb-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.cb-list li {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.5;
+}
+.cb-list li::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--teal);
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
 .metric-card {
-  background: var(--bg2); border-radius: 7px;
-  padding: 7px 9px; text-align: center;
+  background: var(--bg2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: center;
 }
 .metric-val {
-  font-family: var(--serif);
-  font-size: clamp(14px, 1.6vw, 20px);
-  color: var(--teal-d); line-height: 1; margin-bottom: 3px;
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--teal-d);
+  line-height: 1;
+  margin-bottom: 3px;
 }
-.metric-lbl { font-size: 8px; color: var(--ink3); line-height: 1.3; }
-
-.bullets-box {
-  background: var(--white); border: 1px solid var(--border);
-  border-radius: 9px; padding: 10px 12px;
-  flex: 1; min-height: 0; overflow: hidden;
-}
-.bullets-lbl {
-  font-size: 8px; font-weight: 700; letter-spacing: .09em;
-  text-transform: uppercase; color: var(--ink3); margin-bottom: 7px;
-}
-.bullets-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-.bullets-list li {
-  display: flex; gap: 7px;
-  font-size: 9px; color: var(--ink2); line-height: 1.5;
-}
-.bullets-list li::before {
-  content: ''; width: 5px; height: 5px; border-radius: 50%;
-  background: var(--teal); flex-shrink: 0; margin-top: 4px;
+.metric-lbl {
+  font-size: 10px;
+  color: var(--ink3);
+  font-weight: 400;
+  line-height: 1.3;
 }
 
-/* ── FOOTER ───────────────────────────────────────── */
-.s-ftr {
-  background: #ECECEA; border-top: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 16px; height: 26px; flex-shrink: 0;
+/* ── SETBACK SLIDE SPECIFIC ── */
+.setback-chart-area {
+  background: var(--white);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 16px 18px 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
 }
-.s-ftr span { font-size: 8.5px; color: var(--ink3); }
-.s-ftr .ftr-role { color: var(--teal); font-weight: 600; }
+.setback-annotation {
+  background: var(--red-l);
+  border: 1px solid rgba(192,57,43,.2);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 11px;
+  color: var(--red);
+  font-weight: 500;
+  margin-top: 6px;
+  line-height: 1.45;
+}
+.recovery-box {
+  background: var(--teal-l);
+  border: 1px solid rgba(77,184,160,.3);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 11px;
+  color: var(--teal-d);
+  font-weight: 500;
+  margin-top: 6px;
+  line-height: 1.45;
+}
 
-/* ── ARROW BUTTONS ────────────────────────────────── */
-.arrow {
-  position: fixed; top: 50%; transform: translateY(-50%);
-  width: 40px; height: 40px; border-radius: 50%;
-  background: rgba(26,26,24,.7); border: 1px solid rgba(255,255,255,.15);
-  color: rgba(255,255,255,.7); font-size: 16px;
-  cursor: pointer; transition: all .15s; z-index: 100;
-  display: flex; align-items: center; justify-content: center;
-  backdrop-filter: blur(4px);
+/* ── FOOTER ── */
+.slide-footer {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px;
+  flex-shrink: 0;
+  margin-top: 8px;
 }
-.arrow:hover { background: rgba(77,184,160,.8); color: var(--ink); border-color: var(--teal); }
-.arrow:disabled { opacity: .2; cursor: default; pointer-events: none; }
-.arrow-l { left: 12px; }
-.arrow-r { right: 12px; }
+.footer-name { font-size: 10px; color: var(--ink3); font-weight: 400; }
+.footer-date { font-size: 10px; color: var(--ink3); }
+.footer-role { font-size: 10px; color: var(--teal); font-weight: 500; }
 
-/* ── RESPONSIVE ───────────────────────────────────── */
-@media (max-width: 600px) {
-  .s-body { grid-template-columns: 1fr; }
-  .ctx-panel { display: none; }
-  .s-badge { display: none; }
+/* ── BUILD GUIDE ── */
+.build-guide {
+  position: fixed;
+  right: 0; top: 48px; bottom: 0;
+  width: 340px;
+  background: var(--white);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px;
+  transform: translateX(100%);
+  transition: transform .25s ease;
+  z-index: 50;
 }
-@media (max-width: 420px) {
-  .topbar-nav { display: none; }
+.build-guide.open { transform: translateX(0); }
+.bg-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--ink);
 }
+.bg-section {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.bg-section:last-child { border-bottom: none; }
+.bg-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--teal);
+  margin-bottom: 6px;
+}
+.bg-text {
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.6;
+}
+.bg-code {
+  background: var(--bg2);
+  border-radius: 5px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--ink);
+  margin-top: 5px;
+  line-height: 1.6;
+}
+
+.guide-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  z-index: 60;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.guide-btn:hover { background: var(--teal-d); }
+.guide-btn.open-state { background: var(--teal-d); }
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="topbar-brand">
-    <span class="topbar-name">Scott Sampson</span>
-    <span class="topbar-role">Growth Portfolio</span>
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <span class="name">Scott Sampson</span>
+    <span class="role">Growth Portfolio · 2025</span>
   </div>
-  <div class="topbar-nav" id="nav-dots"></div>
-  <div class="topbar-right">
-    <span class="slide-counter" id="counter">1 / 5</span>
+  <div class="nav-slides" id="nav-dots"></div>
+  <div class="nav-arrows">
+    <button class="arrow-btn" id="prev-btn" onclick="prevSlide()">←</button>
+    <button class="arrow-btn" id="next-btn" onclick="nextSlide()">→</button>
+  </div>
+</nav>
+
+<!-- SLIDES CONTAINER -->
+<div class="slides-wrap" id="slides-wrap">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 1: ARR GROWTH TRAJECTORY (indexed)
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide active" id="slide-0">
+    <div class="slide-header">
+      <div class="slide-header-left">
+        <div class="slide-num">Slide 01 · Revenue growth</div>
+        <div class="slide-title">From flat to flywheel</div>
+        <div class="slide-subtitle">Indexed ARR trajectory across three consecutive engagements · All figures index 100 = entry date</div>
+      </div>
+      <div class="slide-company">15-year track record</div>
+    </div>
+
+    <div class="slide-body">
+      <div class="chart-area">
+        <div class="chart-label">Indexed ARR · Entry = 100 per engagement</div>
+        <div class="chart-canvas-wrap">
+          <canvas id="chart-arr"></canvas>
+        </div>
+        <div class="annotation-legend">
+          <div class="ann-item"><div class="ann-line" style="border-color:#4DB8A0"></div> Omnipresent</div>
+          <div class="ann-item"><div class="ann-line" style="border-color:#2E7D6B"></div> Personio</div>
+          <div class="ann-item"><div class="ann-line" style="border-color:#8AC4B8"></div> Civica</div>
+          <div class="ann-item" style="font-style:italic">↑ annotation = decision point</div>
+        </div>
+      </div>
+
+      <div class="context-panel">
+        <div class="insight-box">
+          <div class="insight-label">The insight</div>
+          <div class="insight-text">In every engagement, <strong>growth accelerated after the same intervention</strong>: find the hidden constraint on conversion, fix it fast, then let compounding do the rest.</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-card"><div class="metric-val">3×</div><div class="metric-lbl">Revenue in 12 months (Omni)</div></div>
+          <div class="metric-card"><div class="metric-val">160%</div><div class="metric-lbl">ARR YoY (Personio)</div></div>
+          <div class="metric-card"><div class="metric-val">112%</div><div class="metric-lbl">Growth from flat (Civica)</div></div>
+          <div class="metric-card"><div class="metric-val">5×</div><div class="metric-lbl">ARR at legal tech (consulting)</div></div>
+        </div>
+        <div class="context-bullets">
+          <div class="cb-title">What drove this</div>
+          <ul class="cb-list">
+            <li>Each engagement started with a diagnostic period — no levers pulled until the real constraint was identified</li>
+            <li>Growth accelerated when ICP, messaging, and channel were aligned simultaneously, not sequentially</li>
+            <li>Cost efficiency improved alongside growth in every case — revenue compounded, headcount did not</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span class="footer-name">Scott Sampson</span>
+      <span class="footer-role">Director of Growth · Voy</span>
+      <span class="footer-date">March 2025</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 2: TEAM BUILD & PRODUCTIVITY
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-1">
+    <div class="slide-header">
+      <div class="slide-header-left">
+        <div class="slide-num">Slide 02 · Team efficiency</div>
+        <div class="slide-title">Scaling output faster than headcount</div>
+        <div class="slide-subtitle">Revenue productivity per FTE · Indexed, all figures confidentialised · Personio engagement</div>
+      </div>
+      <div class="slide-company">Personio · 2023–2025</div>
+    </div>
+
+    <div class="slide-body">
+      <div class="chart-area">
+        <div class="chart-label">Revenue index per FTE vs. total team size · Personio</div>
+        <div class="chart-canvas-wrap">
+          <canvas id="chart-team"></canvas>
+        </div>
+        <div class="annotation-legend">
+          <div class="ann-item"><div class="ann-line" style="border-color:#4DB8A0"></div> Rev/FTE index</div>
+          <div class="ann-item"><div class="ann-line" style="border-color:#C8923A"></div> Team headcount index</div>
+          <div class="ann-item" style="font-style:italic">↑ dashed lines = key structural changes</div>
+        </div>
+      </div>
+
+      <div class="context-panel">
+        <div class="insight-box">
+          <div class="insight-label">The insight</div>
+          <div class="insight-text">Productivity per FTE grew <strong>4.2× faster than headcount</strong> — proving the commercial model scaled through better process, not more people.</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-card"><div class="metric-val">4.2×</div><div class="metric-lbl">Productivity per FTE</div></div>
+          <div class="metric-card"><div class="metric-val">50%</div><div class="metric-lbl">CAC payback reduction</div></div>
+          <div class="metric-card"><div class="metric-val">3×</div><div class="metric-lbl">CVR improvement</div></div>
+          <div class="metric-card"><div class="metric-val">2.1×</div><div class="metric-lbl">ACV growth</div></div>
+        </div>
+        <div class="context-bullets">
+          <div class="cb-title">What drove this</div>
+          <ul class="cb-list">
+            <li>Upmarket repositioning from SMB to Enterprise/MM unlocked ACV 2.1× while maintaining conversion velocity</li>
+            <li>CAC halved through channel mix optimisation — spend shifted toward highest-converting, fastest-payback channels</li>
+            <li>Revenue motion systemised: reduced ramp time, improved forecast accuracy, removed manual steps from the funnel</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span class="footer-name">Scott Sampson</span>
+      <span class="footer-role">Director of Growth · Voy</span>
+      <span class="footer-date">March 2025</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 3: PIPELINE / FUNNEL EFFICIENCY
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-2">
+    <div class="slide-header">
+      <div class="slide-header-left">
+        <div class="slide-num">Slide 03 · Funnel efficiency</div>
+        <div class="slide-title">The funnel before and after</div>
+        <div class="slide-subtitle">Stage-by-stage conversion improvement · Civica engagement · Indexed, all values confidentialised</div>
+      </div>
+      <div class="slide-company">Civica · 2025–Present</div>
+    </div>
+
+    <div class="slide-body">
+      <div class="chart-area">
+        <div class="chart-label">Conversion rate index at each funnel stage · Entry vs. current · Before = 100</div>
+        <div class="chart-canvas-wrap">
+          <canvas id="chart-funnel"></canvas>
+        </div>
+        <div class="annotation-legend">
+          <div class="ann-item"><div class="ann-line" style="border-color:#C8C8C4"></div> At entry</div>
+          <div class="ann-item"><div class="ann-line" style="border-color:#4DB8A0"></div> Current</div>
+          <div class="ann-item" style="font-style:italic">Largest gain = quota attainment stage</div>
+        </div>
+      </div>
+
+      <div class="context-panel">
+        <div class="insight-box">
+          <div class="insight-label">The insight</div>
+          <div class="insight-text">The biggest gain wasn't at the top of the funnel — it was at <strong>quota attainment</strong>, where sub-60% became 75%+ by fixing incentive structure and territory design.</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-card"><div class="metric-val">112%</div><div class="metric-lbl">ARR growth from flat</div></div>
+          <div class="metric-card"><div class="metric-val">21%</div><div class="metric-lbl">Bookings profile YoY</div></div>
+          <div class="metric-card"><div class="metric-val">40pp</div><div class="metric-lbl">EBIT margin improvement</div></div>
+          <div class="metric-card"><div class="metric-val">75%+</div><div class="metric-lbl">Quota attainment (from &lt;60%)</div></div>
+        </div>
+        <div class="context-bullets">
+          <div class="cb-title">What drove this</div>
+          <ul class="cb-list">
+            <li>Territory redesign removed overlap and gave each rep genuine ownership — attainment improved within one quarter</li>
+            <li>OpEx reduced 25% while bookings grew 21% — 40pp EBIT improvement without sacrificing the live revenue portfolio</li>
+            <li>Funnel instrumented for the first time — decisions moved from instinct to data within 30 days of joining</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span class="footer-name">Scott Sampson</span>
+      <span class="footer-role">Director of Growth · Voy</span>
+      <span class="footer-date">March 2025</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 4: SETBACK & RECOVERY
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-3">
+    <div class="slide-header">
+      <div class="slide-header-left">
+        <div class="slide-num">Slide 04 · Setback &amp; recovery</div>
+        <div class="slide-title">The time the plan didn't work</div>
+        <div class="slide-subtitle">NRR trajectory at Reward Gateway · Early expansion motion failed · What we changed</div>
+      </div>
+      <div class="slide-company">Reward Gateway · 2011–2016</div>
+    </div>
+
+    <div class="slide-body">
+      <div class="chart-area setback-chart-area">
+        <div class="chart-label">NRR index · Entry = 100 (representing 65% NRR baseline) · Recovery trajectory</div>
+        <div class="chart-canvas-wrap">
+          <canvas id="chart-setback"></canvas>
+        </div>
+        <div class="setback-annotation">
+          ↓ Month 8 — Initial expansion motion launched. NRR deteriorated further. Wrong ICP for upsell, wrong trigger point, wrong message.
+        </div>
+        <div class="recovery-box">
+          ↑ Month 14 — Redesigned activation model. Shifted from volume expansion to value expansion. NRR inflected.
+        </div>
+      </div>
+
+      <div class="context-panel">
+        <div class="insight-box">
+          <div class="insight-label">What I learned</div>
+          <div class="insight-text">The first expansion motion I designed <strong>made things worse</strong>. It was too aggressive, too early, to the wrong segment. Rebuilding from that taught me more about retention economics than anything else in my career.</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-card"><div class="metric-val">65%</div><div class="metric-lbl">NRR at entry</div></div>
+          <div class="metric-card"><div class="metric-val">115%</div><div class="metric-lbl">NRR at exit</div></div>
+          <div class="metric-card"><div class="metric-val">50%→&lt;10%</div><div class="metric-lbl">Attrition</div></div>
+          <div class="metric-card"><div class="metric-val">£1.2m</div><div class="metric-lbl">LTV at exit (2× entry)</div></div>
+        </div>
+        <div class="context-bullets">
+          <div class="cb-title">The three things I changed</div>
+          <ul class="cb-list">
+            <li>Killed the volume-based expansion model and rebuilt around value expansion — only upsell when the customer has genuinely activated and seen ROI</li>
+            <li>Changed the trigger for expansion conversations from "contract renewal date" to "customer success milestone" — this alone moved NRR significantly</li>
+            <li>Reduced attrition from 50% to sub-10% by addressing the underlying product adoption problem, not the churn problem. If activation works, retention follows.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span class="footer-name">Scott Sampson</span>
+      <span class="footer-role">Director of Growth · Voy</span>
+      <span class="footer-date">March 2025</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 5: GTM MODEL EVOLUTION (Omnipresent)
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-4">
+    <div class="slide-header">
+      <div class="slide-header-left">
+        <div class="slide-num">Slide 05 · Commercial model evolution</div>
+        <div class="slide-title">Redesigning the motion mid-flight</div>
+        <div class="slide-subtitle">Cost efficiency vs. revenue index · Omnipresent · Proving that growth and efficiency compound together</div>
+      </div>
+      <div class="slide-company">Omnipresent · 2021–2023</div>
+    </div>
+
+    <div class="slide-body">
+      <div class="chart-area">
+        <div class="chart-label">Revenue index vs. Cost:Revenue ratio · Entry = 100 · Lower cost:revenue = more efficient</div>
+        <div class="chart-canvas-wrap">
+          <canvas id="chart-gtm"></canvas>
+        </div>
+        <div class="annotation-legend">
+          <div class="ann-item"><div class="ann-line" style="border-color:#4DB8A0"></div> Revenue index</div>
+          <div class="ann-item"><div class="ann-line" style="border-color:#C8923A"></div> Cost:revenue index (lower = better)</div>
+          <div class="ann-item" style="font-style:italic">Crossover = the commercial model matured</div>
+        </div>
+      </div>
+
+      <div class="context-panel">
+        <div class="insight-box">
+          <div class="insight-label">The insight</div>
+          <div class="insight-text">Revenue tripled in 12 months while cost efficiency <strong>doubled</strong>. The model scaled because the growth engine was rebuilt, not just fuelled.</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-card"><div class="metric-val">3×</div><div class="metric-lbl">Revenue in 12 months</div></div>
+          <div class="metric-card"><div class="metric-val">2×</div><div class="metric-lbl">Cost efficiency gain</div></div>
+          <div class="metric-card"><div class="metric-val">6×</div><div class="metric-lbl">Team scaled</div></div>
+          <div class="metric-card"><div class="metric-val">107%</div><div class="metric-lbl">NRR at exit</div></div>
+        </div>
+        <div class="context-bullets">
+          <div class="cb-title">What drove this</div>
+          <ul class="cb-list">
+            <li>Rebuilt ICP definition from broad to precise — same team, higher win rate, better fit customers with lower churn</li>
+            <li>Removed low-productivity channels early and doubled down on the two that compounded — fewer bets, deeper execution</li>
+            <li>NRR improvement from 84% to 107% reduced the effective CAC burden — existing revenue compounded, new spend went further</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span class="footer-name">Scott Sampson</span>
+      <span class="footer-role">Director of Growth · Voy</span>
+      <span class="footer-date">March 2025</span>
+    </div>
+  </div>
+
+</div><!-- end slides-wrap -->
+
+<!-- BUILD GUIDE PANEL -->
+<div class="build-guide" id="build-guide">
+  <div class="bg-title">Google Slides build guide</div>
+
+  <div class="bg-section">
+    <div class="bg-label">Canvas setup</div>
+    <div class="bg-text">File → Page setup → Custom → 25.4cm × 14.3cm (widescreen 16:9). Background: #F4F3F0</div>
+    <div class="bg-code">Slide bg: #F4F3F0<br>Chart area: #FFFFFF, rounded 8px<br>Context panel bg: #FFFFFF<br>Insight box: #1A1A18</div>
+  </div>
+
+  <div class="bg-section">
+    <div class="bg-label">Typography</div>
+    <div class="bg-code">Display: Playfair Display 600<br>  Slide title: 22pt<br>  Metric values: 24pt<br>Body: DM Sans 400<br>  Body text: 11pt<br>  Labels: 9pt, uppercase, +10 tracking<br>Colour: #1A1A18 ink, #8A8A84 muted</div>
+  </div>
+
+  <div class="bg-section">
+    <div class="bg-label">Colour palette</div>
+    <div class="bg-code">Teal accent:   #4DB8A0<br>Teal dark:     #2E8B78<br>Teal light:    #D6F0EA<br>Amber:         #C8923A<br>Background:    #F4F3F0<br>White panel:   #FFFFFF<br>Ink:           #1A1A18<br>Muted:         #8A8A84<br>Border:        rgba(26,26,24,9%)</div>
+  </div>
+
+  <div class="bg-section">
+    <div class="bg-label">Layout grid</div>
+    <div class="bg-text">Header: 52px tall strip. Body: chart left 65%, context right 35%. Gutter: 14px. Footer: 28px strip.</div>
+    <div class="bg-code">Outer margin: 20px all sides<br>Chart panel: padding 16px<br>Context panel: padding 14px<br>Gap between panels: 14px</div>
+  </div>
+
+  <div class="bg-section">
+    <div class="bg-label">Chart annotations</div>
+    <div class="bg-text">Dashed vertical lines: 1.5pt, teal #4DB8A0. Annotation label: 9pt DM Sans, #2E8B78, connected by a thin rule. All annotations must be labelled with the decision, not just the date.</div>
+  </div>
+
+  <div class="bg-section">
+    <div class="bg-label">Slide 1 — ARR chart</div>
+    <div class="bg-text">Line chart, 3 series. X: months 0–24. Y: indexed 0–400. One series per engagement. Annotate at the point of each major GTM change.</div>
+  </div>
+
+  <div class="bg-section">
+    <div class="bg-label">Slide 2 — Team/productivity</div>
+    <div class="bg-text">Dual-axis line chart. Left axis: Rev/FTE index. Right axis: Headcount index. Crossover point shows when productivity started outpacing team size.</div>
+  </div>
+
+  <div class="bg-section">
+    <div class="bg-label">Slide 3 — Funnel</div>
+    <div class="bg-text">Grouped bar chart. X: funnel stages (Lead, Qual, Demo, Proposal, Close, Attainment). Two bars per stage: before (grey) vs. after (teal). Highlight the Attainment bar in bold teal.</div>
+  </div>
+
+  <div class="bg-section">
+    <div class="bg-label">Slide 4 — Setback</div>
+    <div class="bg-text">Single line chart, NRR index. Shade the dip region in red-tint (#FDECEA). Mark month 8 (failure) with red dashed line, month 14 (recovery inflection) with teal dashed line. Keep the chart honest — don't smooth the dip.</div>
+  </div>
+
+  <div class="bg-section">
+    <div class="bg-label">Slide 5 — GTM evolution</div>
+    <div class="bg-text">Dual-line chart. Revenue index rises. Cost:revenue index falls. Crossover annotated. The visual should make the compounding obvious — revenue goes up while cost efficiency improves simultaneously.</div>
+  </div>
+
+  <div class="bg-section">
+    <div class="bg-label">Footer (all slides)</div>
+    <div class="bg-code">Left:   Scott Sampson · DM Sans 9pt #8A8A84<br>Centre: Director of Growth · Voy · #4DB8A0<br>Right:  March 2025 · DM Sans 9pt #8A8A84<br>Separator: 0.5pt line #E0E0DC</div>
+  </div>
+
+  <div class="bg-section">
+    <div class="bg-label">Risk notes</div>
+    <div class="bg-text">Slide 1: Always note that each line is a different engagement — readers may assume it's one continuous story. Add a legend clearly showing company names.</div>
+    <div class="bg-text" style="margin-top:6px">Slide 4: The setback slide must show the actual dip — don't smooth it. A perfect-looking recovery without an honest low point will read as manufactured.</div>
+    <div class="bg-text" style="margin-top:6px">All slides: Every annotation must name the decision, not just mark a date. "Restructured territory model" not "Q2 2025."</div>
   </div>
 </div>
 
-<!-- VIEWPORT -->
-<div class="viewport" id="viewport">
-<div class="slides-track" id="track">
-
-<!-- ════════════════════════════════════════
-     SLIDE 1 — From flat to flywheel
-═════════════════════════════════════════ -->
-<div class="slide">
-  <div class="s-hdr">
-    <div class="s-num">01 / 05 · Revenue growth</div>
-    <div class="s-title">From flat to flywheel</div>
-    <div class="s-sub">Indexed ARR trajectory across three consecutive engagements · Entry = 100 per engagement</div>
-    <div class="s-badge">15-year track record</div>
-  </div>
-  <div class="s-body">
-    <div class="chart-panel">
-      <div class="chart-lbl">Indexed ARR · Entry = 100 · Each line = one engagement</div>
-      <div class="chart-canvas-wrap"><canvas id="c1"></canvas></div>
-      <div class="legend-row">
-        <div class="leg-item"><div class="leg-swatch" style="background:#4DB8A0"></div>Omnipresent</div>
-        <div class="leg-item"><div class="leg-swatch" style="background:#2E8B78"></div>Personio</div>
-        <div class="leg-item"><div class="leg-swatch" style="background:#8AC4B8;border-top:2px dashed #8AC4B8;height:0"></div>Civica (ongoing)</div>
-        <div class="leg-item" style="font-style:italic">↑ dashed lines = decision points</div>
-      </div>
-    </div>
-    <div class="ctx-panel">
-      <div class="insight-box">
-        <div class="insight-lbl">The insight</div>
-        <div class="insight-txt">In every engagement, growth accelerated after the same intervention: <strong>find the hidden constraint, fix it fast</strong>, then let compounding do the rest.</div>
-      </div>
-      <div class="metrics-grid">
-        <div class="metric-card"><div class="metric-val">3×</div><div class="metric-lbl">Revenue in 12 months</div></div>
-        <div class="metric-card"><div class="metric-val">160%</div><div class="metric-lbl">ARR YoY (Personio)</div></div>
-        <div class="metric-card"><div class="metric-val">112%</div><div class="metric-lbl">Growth from flat</div></div>
-        <div class="metric-card"><div class="metric-val">5×</div><div class="metric-lbl">ARR (legal tech)</div></div>
-      </div>
-      <div class="bullets-box">
-        <div class="bullets-lbl">What drove this</div>
-        <ul class="bullets-list">
-          <li>Each engagement started with a diagnostic period — no levers pulled until the real constraint was identified</li>
-          <li>Growth accelerated when ICP, messaging, and channel were aligned simultaneously, not sequentially</li>
-          <li>Cost efficiency improved alongside growth — revenue compounded, headcount did not</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="s-ftr">
-    <span>Scott Sampson</span><span class="ftr-role">Director of Growth · Voy</span><span>March 2025</span>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     SLIDE 2 — Scaling output faster
-═════════════════════════════════════════ -->
-<div class="slide">
-  <div class="s-hdr">
-    <div class="s-num">02 / 05 · Team efficiency</div>
-    <div class="s-title">Scaling output faster than headcount</div>
-    <div class="s-sub">Revenue productivity per FTE vs. team index · Personio · Indexed, entry = 100</div>
-    <div class="s-badge">Personio · 2023–2025</div>
-  </div>
-  <div class="s-body">
-    <div class="chart-panel">
-      <div class="chart-lbl">Rev / FTE index vs. Headcount index · Personio engagement</div>
-      <div class="chart-canvas-wrap"><canvas id="c2"></canvas></div>
-      <div class="legend-row">
-        <div class="leg-item"><div class="leg-swatch" style="background:#4DB8A0"></div>Revenue / FTE index</div>
-        <div class="leg-item"><div class="leg-swatch" style="background:#C8923A"></div>Headcount index</div>
-      </div>
-    </div>
-    <div class="ctx-panel">
-      <div class="insight-box">
-        <div class="insight-lbl">The insight</div>
-        <div class="insight-txt">Productivity per FTE grew <strong>4.2× faster than headcount</strong> — the commercial model scaled through better process, not more people.</div>
-      </div>
-      <div class="metrics-grid">
-        <div class="metric-card"><div class="metric-val">4.2×</div><div class="metric-lbl">Productivity / FTE</div></div>
-        <div class="metric-card"><div class="metric-val">50%</div><div class="metric-lbl">CAC payback cut</div></div>
-        <div class="metric-card"><div class="metric-val">3×</div><div class="metric-lbl">CVR improvement</div></div>
-        <div class="metric-card"><div class="metric-val">2.1×</div><div class="metric-lbl">ACV growth</div></div>
-      </div>
-      <div class="bullets-box">
-        <div class="bullets-lbl">What drove this</div>
-        <ul class="bullets-list">
-          <li>Upmarket repositioning unlocked ACV 2.1× while maintaining conversion velocity</li>
-          <li>CAC halved through channel mix optimisation — spend shifted to highest-payback channels</li>
-          <li>Revenue motion systemised: reduced ramp time, removed manual funnel steps</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="s-ftr">
-    <span>Scott Sampson</span><span class="ftr-role">Director of Growth · Voy</span><span>March 2025</span>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     SLIDE 3 — Funnel before and after
-═════════════════════════════════════════ -->
-<div class="slide">
-  <div class="s-hdr">
-    <div class="s-num">03 / 05 · Funnel efficiency</div>
-    <div class="s-title">The funnel before and after</div>
-    <div class="s-sub">Stage-by-stage conversion improvement · Civica · Indexed, entry = 100 · All values confidentialised</div>
-    <div class="s-badge">Civica · 2025–Present</div>
-  </div>
-  <div class="s-body">
-    <div class="chart-panel">
-      <div class="chart-lbl">Conversion index per funnel stage · Entry (grey) vs. Current (teal)</div>
-      <div class="chart-canvas-wrap"><canvas id="c3"></canvas></div>
-      <div class="legend-row">
-        <div class="leg-item"><div class="leg-swatch" style="background:#C8C8C4"></div>At entry (baseline 100)</div>
-        <div class="leg-item"><div class="leg-swatch" style="background:#4DB8A0"></div>Current</div>
-        <div class="leg-item" style="font-style:italic">Largest gain = Attainment stage</div>
-      </div>
-    </div>
-    <div class="ctx-panel">
-      <div class="insight-box">
-        <div class="insight-lbl">The insight</div>
-        <div class="insight-txt">The biggest gain wasn't at the top of funnel — it was at <strong>Attainment</strong>, where sub-60% became 75%+ by fixing incentive structure and territory design.</div>
-      </div>
-      <div class="metrics-grid">
-        <div class="metric-card"><div class="metric-val">112%</div><div class="metric-lbl">ARR growth from flat</div></div>
-        <div class="metric-card"><div class="metric-val">21%</div><div class="metric-lbl">Bookings YoY</div></div>
-        <div class="metric-card"><div class="metric-val">40pp</div><div class="metric-lbl">EBIT margin gain</div></div>
-        <div class="metric-card"><div class="metric-val">75%+</div><div class="metric-lbl">Quota attainment</div></div>
-      </div>
-      <div class="bullets-box">
-        <div class="bullets-lbl">What drove this</div>
-        <ul class="bullets-list">
-          <li>Territory redesign removed overlap — attainment improved within one quarter</li>
-          <li>OpEx reduced 25% while bookings grew 21% — 40pp EBIT gain, no sacrifice to live revenue</li>
-          <li>Funnel instrumented for the first time — decisions moved from instinct to data within 30 days</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="s-ftr">
-    <span>Scott Sampson</span><span class="ftr-role">Director of Growth · Voy</span><span>March 2025</span>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     SLIDE 4 — The time the plan didn't work
-═════════════════════════════════════════ -->
-<div class="slide">
-  <div class="s-hdr">
-    <div class="s-num">04 / 05 · Setback &amp; recovery</div>
-    <div class="s-title">The time the plan didn't work</div>
-    <div class="s-sub">NRR index trajectory · Reward Gateway · Early expansion motion failed · What changed</div>
-    <div class="s-badge">Reward Gateway · 2011–2016</div>
-  </div>
-  <div class="s-body">
-    <div class="chart-panel">
-      <div class="chart-lbl">NRR index · Entry = 100 (representing 65% NRR baseline) · Recovery trajectory</div>
-      <div class="chart-canvas-wrap"><canvas id="c4"></canvas></div>
-      <div class="ann-note ann-red">↓ Month 8 — First expansion motion launched. NRR deteriorated further. Wrong ICP, wrong trigger, wrong message. Rebuilt from scratch at month 14.</div>
-    </div>
-    <div class="ctx-panel">
-      <div class="insight-box">
-        <div class="insight-lbl">What I learned</div>
-        <div class="insight-txt">The first expansion motion I designed <strong>made things worse</strong>. Too aggressive, too early, wrong segment. Rebuilding from that taught me more about retention economics than anything else in my career.</div>
-      </div>
-      <div class="metrics-grid">
-        <div class="metric-card"><div class="metric-val">65%</div><div class="metric-lbl">NRR at entry</div></div>
-        <div class="metric-card"><div class="metric-val">115%</div><div class="metric-lbl">NRR at exit</div></div>
-        <div class="metric-card"><div class="metric-val">&lt;10%</div><div class="metric-lbl">Attrition at exit</div></div>
-        <div class="metric-card"><div class="metric-val">£1.2m</div><div class="metric-lbl">LTV at exit (2×)</div></div>
-      </div>
-      <div class="bullets-box">
-        <div class="bullets-lbl">The three things I changed</div>
-        <ul class="bullets-list">
-          <li>Killed volume-based expansion — rebuilt around value expansion only after the customer sees ROI</li>
-          <li>Changed expansion trigger from contract renewal date to customer success milestone</li>
-          <li>Fixed the activation problem, not the churn problem — if activation works, retention follows</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="s-ftr">
-    <span>Scott Sampson</span><span class="ftr-role">Director of Growth · Voy</span><span>March 2025</span>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     SLIDE 5 — GTM Model Evolution
-═════════════════════════════════════════ -->
-<div class="slide">
-  <div class="s-hdr">
-    <div class="s-num">05 / 05 · Commercial model evolution</div>
-    <div class="s-title">Redesigning the motion mid-flight</div>
-    <div class="s-sub">Revenue index vs. cost:revenue ratio · Omnipresent · Growth and efficiency compounding together</div>
-    <div class="s-badge">Omnipresent · 2021–2023</div>
-  </div>
-  <div class="s-body">
-    <div class="chart-panel">
-      <div class="chart-lbl">Revenue index (teal ↑) vs. Cost:revenue index (amber ↓ lower = better) · Omnipresent</div>
-      <div class="chart-canvas-wrap"><canvas id="c5"></canvas></div>
-      <div class="legend-row">
-        <div class="leg-item"><div class="leg-swatch" style="background:#4DB8A0"></div>Revenue index ↑</div>
-        <div class="leg-item"><div class="leg-swatch" style="background:#C8923A"></div>Cost:revenue index ↓ better</div>
-        <div class="leg-item" style="font-style:italic">Crossover = commercial model matured</div>
-      </div>
-    </div>
-    <div class="ctx-panel">
-      <div class="insight-box">
-        <div class="insight-lbl">The insight</div>
-        <div class="insight-txt">Revenue tripled in 12 months while cost efficiency <strong>doubled</strong>. The model scaled because the growth engine was rebuilt, not just fuelled.</div>
-      </div>
-      <div class="metrics-grid">
-        <div class="metric-card"><div class="metric-val">3×</div><div class="metric-lbl">Revenue in 12 months</div></div>
-        <div class="metric-card"><div class="metric-val">2×</div><div class="metric-lbl">Cost efficiency gain</div></div>
-        <div class="metric-card"><div class="metric-val">6×</div><div class="metric-lbl">Team scaled</div></div>
-        <div class="metric-card"><div class="metric-val">107%</div><div class="metric-lbl">NRR at exit</div></div>
-      </div>
-      <div class="bullets-box">
-        <div class="bullets-lbl">What drove this</div>
-        <ul class="bullets-list">
-          <li>Rebuilt ICP definition from broad to precise — same team, higher win rate, better-fit customers with lower churn</li>
-          <li>Removed low-productivity channels and doubled down on the two that compounded</li>
-          <li>NRR improvement 84%→107% reduced effective CAC burden — existing revenue compounded, new spend went further</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="s-ftr">
-    <span>Scott Sampson</span><span class="ftr-role">Director of Growth · Voy</span><span>March 2025</span>
-  </div>
-</div>
-
-</div><!-- end track -->
-</div><!-- end viewport -->
-
-<!-- ARROW BUTTONS -->
-<button class="arrow arrow-l" id="prev" onclick="go(-1)">&#8592;</button>
-<button class="arrow arrow-r" id="next" onclick="go(1)">&#8594;</button>
+<!-- GUIDE TOGGLE -->
+<button class="guide-btn" id="guide-toggle" onclick="toggleGuide()">
+  ◧ Build guide
+</button>
 
 <script>
-// ── SLIDER ────────────────────────────────────────────────────────
-let cur = 0;
-const TOTAL = 5;
-const track = document.getElementById('track');
-const viewport = document.getElementById('viewport');
-
-function setViewportHeight() {
-  // Make viewport fill available height below topbar
-  const topH = document.querySelector('.topbar').offsetHeight;
-  viewport.style.height = (window.innerHeight - topH) + 'px';
-}
-setViewportHeight();
-window.addEventListener('resize', () => { setViewportHeight(); renderAll(); });
-
-function go(dir) {
-  const next = cur + dir;
-  if (next < 0 || next >= TOTAL) return;
-  cur = next;
-  track.style.transform = `translateX(-${cur * 100}vw)`;
-  updateUI();
-}
+// ── SLIDE NAVIGATION ────────────────────────────────────────────────
+let current = 0;
+const total = 5;
 
 function goTo(n) {
-  if (n === cur) return;
-  cur = n;
-  track.style.transform = `translateX(-${cur * 100}vw)`;
-  updateUI();
+  document.getElementById('slide-' + current).classList.remove('active');
+  current = n;
+  document.getElementById('slide-' + current).classList.add('active');
+  updateNav();
+  // re-render visible chart
+  renderCurrentChart();
 }
 
-function updateUI() {
-  document.getElementById('prev').disabled = cur === 0;
-  document.getElementById('next').disabled = cur === TOTAL - 1;
-  document.getElementById('counter').textContent = (cur + 1) + ' / ' + TOTAL;
-  document.querySelectorAll('.nav-pill').forEach((p, i) => p.classList.toggle('active', i === cur));
+function nextSlide() { if (current < total - 1) goTo(current + 1); }
+function prevSlide() { if (current > 0) goTo(current - 1); }
+
+function updateNav() {
+  document.getElementById('prev-btn').disabled = current === 0;
+  document.getElementById('next-btn').disabled = current === total - 1;
+  document.querySelectorAll('.nav-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === current);
+  });
 }
 
 // Build nav dots
 const dotWrap = document.getElementById('nav-dots');
-for (let i = 0; i < TOTAL; i++) {
-  const b = document.createElement('button');
-  b.className = 'nav-pill' + (i === 0 ? ' active' : '');
-  b.textContent = i + 1;
-  b.onclick = () => goTo(i);
-  dotWrap.appendChild(b);
+for (let i = 0; i < total; i++) {
+  const btn = document.createElement('button');
+  btn.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  btn.textContent = i + 1;
+  btn.onclick = () => goTo(i);
+  dotWrap.appendChild(btn);
 }
-updateUI();
 
-// Keyboard navigation
+// Keyboard nav
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSlide();
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevSlide();
 });
 
-// Touch/swipe support
-let touchX = null;
-viewport.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
-viewport.addEventListener('touchend', e => {
-  if (touchX === null) return;
-  const dx = e.changedTouches[0].clientX - touchX;
-  if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
-  touchX = null;
-}, { passive: true });
+// ── BUILD GUIDE ──────────────────────────────────────────────────────
+let guideOpen = false;
+function toggleGuide() {
+  guideOpen = !guideOpen;
+  document.getElementById('build-guide').classList.toggle('open', guideOpen);
+  document.getElementById('guide-toggle').classList.toggle('open-state', guideOpen);
+  document.getElementById('guide-toggle').textContent = guideOpen ? '✕ Close guide' : '◧ Build guide';
+}
 
-// ── CHART ENGINE (native Canvas API) ──────────────────────────────
+// ── CHART RENDERING ─────────────────────────────────────────────────
 const TEAL   = '#4DB8A0';
 const TEAL_D = '#2E8B78';
 const AMBER  = '#C8923A';
-const RED    = '#C0392B';
 const GREY   = '#C8C8C4';
-const INK2   = '#4A4A46';
+const INK    = '#1A1A18';
 const INK3   = '#8A8A84';
-const BG2    = '#ECEAE5';
-const WHITE  = '#FFFFFF';
-const FONT   = "-apple-system,'Helvetica Neue',Arial,sans-serif";
+const RED    = '#C0392B';
 
-// Computed chart data
-const DATA = {
-  c1: {
-    type: 'multiline',
-    labels: ['Entry','M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12','M13','M14','M15','M16','M17','M18'],
-    series: [
-      { name:'Omnipresent', color:TEAL,   data:[100,108,118,130,145,162,182,205,230,260,285,308,320,null,null,null,null,null,null], dash:[] },
-      { name:'Personio',    color:TEAL_D, data:[100,106,115,127,142,160,178,196,215,235,248,258,268,276,282,288,253,260,null], dash:[] },
-      { name:'Civica',      color:'#8AC4B8', data:[100,100,101,105,112,122,134,148,163,null,null,null,null,null,null,null,null,null,null], dash:[4,3] }
-    ],
-    yMin:80, yLabel:'Indexed ARR',
-    annotations:[{idx:3,label:'ICP\nredefined',color:TEAL},{idx:7,label:'Channel\nshift',color:TEAL_D}]
-  },
-  c2: {
-    type: 'multiline',
-    labels: ['Entry','Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8'],
-    series: [
-      { name:'Rev/FTE',   color:TEAL,  data:[100,112,128,148,173,210,268,340,420], dash:[] },
-      { name:'Headcount', color:AMBER, data:[100,120,135,148,155,165,172,180,188], dash:[5,3] }
-    ],
-    yMin:80, yLabel:'Index (entry = 100)',
-    annotations:[{idx:2,label:'Upmarket\nreposition',color:TEAL_D},{idx:5,label:'Motion\nsystemised',color:TEAL}]
-  },
-  c3: {
-    type: 'grouped-bar',
-    labels: ['Lead\nquality','Qualific-\nation','Demo','Proposal','Close\nrate','Attainment'],
-    before: [100,100,100,100,100,100],
-    after:  [118,126,135,148,138,165],
-    yMin:80, yLabel:'Conversion index'
-  },
-  c4: {
-    type: 'multiline',
-    labels: ['Entry','M3','M6','M8','M10','M12','M14','M18','M24','M30','M36','M42','M48'],
-    series: [
-      { name:'NRR index', color:TEAL, data:[100,97,93,86,87,93,105,120,133,144,153,160,165], dash:[] }
-    ],
-    yMin:78, yLabel:'NRR index',
-    dipRange:[2,4],
-    annotations:[
-      {idx:3,label:'Expansion\nfails',color:RED},
-      {idx:6,label:'Redesigned\nactivation',color:TEAL}
-    ]
-  },
-  c5: {
-    type: 'multiline',
-    labels: ['Entry','M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12'],
-    series: [
-      { name:'Revenue index',    color:TEAL,  data:[100,112,128,148,170,196,225,252,272,288,300,308,316], dash:[] },
-      { name:'Cost:rev index ↓', color:AMBER, data:[100,102,100,96,92,86,80,73,67,62,58,55,52], dash:[5,3] }
-    ],
-    yMin:40, yLabel:'Index (entry = 100)',
-    annotations:[{idx:2,label:'ICP\nprecision',color:TEAL_D},{idx:5,label:'Channel\nfocus',color:TEAL},{idx:9,label:'NRR\ninflects',color:AMBER}]
-  }
-};
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size   = 11;
+Chart.defaults.color       = INK3;
 
-function renderChart(canvasId, cfg) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-  const wrap = canvas.parentElement;
-  const W = wrap.offsetWidth;
-  const H = wrap.offsetHeight;
-  if (!W || !H) return;
+const charts = {};
 
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width  = W * dpr;
-  canvas.height = H * dpr;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  ctx.clearRect(0, 0, W, H);
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
 
-  const PAD = { top:28, right:14, bottom:36, left:46 };
-  const cW = W - PAD.left - PAD.right;
-  const cH = H - PAD.top  - PAD.bottom;
-
-  ctx.font = `10px ${FONT}`;
-
-  if (cfg.type === 'multiline') {
-    drawMultiLine(ctx, cfg, W, H, PAD, cW, cH);
-  } else if (cfg.type === 'grouped-bar') {
-    drawGroupedBar(ctx, cfg, W, H, PAD, cW, cH);
+function renderCurrentChart() {
+  switch(current) {
+    case 0: renderARR(); break;
+    case 1: renderTeam(); break;
+    case 2: renderFunnel(); break;
+    case 3: renderSetback(); break;
+    case 4: renderGTM(); break;
   }
 }
 
-function getY(val, yMin, yMax, cH, padTop) {
-  return padTop + cH - ((val - yMin) / (yMax - yMin)) * cH;
-}
+// ── Slide 1: ARR ────────────────────────────────────────────────────
+function renderARR() {
+  destroyChart('arr');
+  const ctx = document.getElementById('chart-arr').getContext('2d');
 
-function getX(idx, total, cW, padLeft) {
-  return padLeft + (idx / (total - 1)) * cW;
-}
+  // Omnipresent: months 0-12, near 3x
+  const omni = [100,108,118,130,145,162,182,205,230,260,285,308,320];
+  // Personio: months 0-18, 160% growth
+  const pers = [100,106,115,127,142,160,178,196,215,235,248,258,268,276,282,288,253,260];
+  // Civica: months 0-7 (ongoing), from flat to 112%
+  const civ  = [100,100,101,105,112,122,134,148,163];
 
-function drawMultiLine(ctx, cfg, W, H, PAD, cW, cH) {
-  const { labels, series, yMin: rawMin, yLabel, annotations, dipRange } = cfg;
-  const allVals = series.flatMap(s => s.data.filter(v => v !== null));
-  const yMax = Math.ceil(Math.max(...allVals) * 1.08 / 50) * 50;
-  const yMin = rawMin;
+  const labels12 = Array.from({length:13},(_, i)=> i===0?'Entry': i===12?'Month 12':'M'+i);
+  const labels18 = Array.from({length:18},(_, i)=> i===0?'Entry':'M'+i);
 
-  // Grid lines
-  const ySteps = 5;
-  for (let i = 0; i <= ySteps; i++) {
-    const v = yMin + (yMax - yMin) * i / ySteps;
-    const y = getY(v, yMin, yMax, cH, PAD.top);
-    ctx.beginPath();
-    ctx.strokeStyle = i === 0 ? 'rgba(0,0,0,.12)' : 'rgba(0,0,0,.05)';
-    ctx.lineWidth = i === 0 ? 1 : 0.5;
-    ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y);
-    ctx.stroke();
-    // Y label
-    ctx.fillStyle = INK3;
-    ctx.font = `9px ${FONT}`;
-    ctx.textAlign = 'right';
-    ctx.fillText(Math.round(v), PAD.left - 5, y + 3);
-  }
+  // Use 18-point x axis, pad shorter series with null
+  const labels = Array.from({length:19},(_, i)=> i===0?'Entry': i+'m');
+  const omniPad = [...omni, ...Array(19-omni.length).fill(null)];
+  const persPad = [...pers, ...Array(19-pers.length).fill(null)];
+  const civPad  = [...civ,  ...Array(19-civ.length).fill(null)];
 
-  // Dip shading (slide 4)
-  if (dipRange) {
-    const x0 = getX(dipRange[0], labels.length, cW, PAD.left);
-    const x1 = getX(dipRange[1], labels.length, cW, PAD.left);
-    ctx.fillStyle = 'rgba(192,57,43,.07)';
-    ctx.fillRect(x0, PAD.top, x1 - x0, cH);
-  }
-
-  // X labels
-  ctx.fillStyle = INK3; ctx.font = `9px ${FONT}`; ctx.textAlign = 'center';
-  const step = Math.ceil(labels.length / 8);
-  labels.forEach((l, i) => {
-    if (i % step !== 0 && i !== labels.length - 1) return;
-    const x = getX(i, labels.length, cW, PAD.left);
-    ctx.fillText(l, x, H - 6);
-  });
-
-  // Annotations (dashed vertical lines)
-  if (annotations) {
-    annotations.forEach(a => {
-      const x = getX(a.idx, labels.length, cW, PAD.left);
-      ctx.save();
-      ctx.setLineDash([3,3]);
-      ctx.strokeStyle = a.color || TEAL_D;
-      ctx.lineWidth = 1;
-      ctx.globalAlpha = 0.55;
-      ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, PAD.top + cH); ctx.stroke();
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = a.color || TEAL_D;
-      ctx.font = `bold 7.5px ${FONT}`; ctx.textAlign = 'center';
-      const lines = (a.label || '').split('\n');
-      lines.forEach((l, li) => ctx.fillText(l, x, PAD.top + 8 + li * 10));
-      ctx.restore();
-    });
-  }
-
-  // Y axis label
-  ctx.save();
-  ctx.translate(11, PAD.top + cH / 2);
-  ctx.rotate(-Math.PI / 2);
-  ctx.fillStyle = INK3; ctx.font = `8px ${FONT}`; ctx.textAlign = 'center';
-  ctx.fillText(yLabel, 0, 0);
-  ctx.restore();
-
-  // Lines
-  series.forEach(s => {
-    const pts = s.data.map((v, i) => ({ x: getX(i, labels.length, cW, PAD.left), y: v !== null ? getY(v, yMin, yMax, cH, PAD.top) : null }));
-    ctx.beginPath();
-    ctx.strokeStyle = s.color;
-    ctx.lineWidth = 2.2;
-    ctx.setLineDash(s.dash || []);
-    let first = true;
-    pts.forEach(p => {
-      if (p.y === null) { first = true; return; }
-      if (first) { ctx.moveTo(p.x, p.y); first = false; }
-      else ctx.lineTo(p.x, p.y);
-    });
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Dots on data points
-    pts.forEach(p => {
-      if (p.y === null) return;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = s.color; ctx.fill();
-    });
+  charts['arr'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Omnipresent',
+          data: omniPad,
+          borderColor: TEAL,
+          backgroundColor: 'transparent',
+          borderWidth: 2.5,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.35
+        },
+        {
+          label: 'Personio',
+          data: persPad,
+          borderColor: TEAL_D,
+          backgroundColor: 'transparent',
+          borderWidth: 2.5,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.35
+        },
+        {
+          label: 'Civica',
+          data: civPad,
+          borderColor: '#8AC4B8',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderDash: [4,3],
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.35
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: INK,
+          titleFont: { size: 11, weight: '500' },
+          bodyFont: { size: 11 },
+          padding: 10,
+          callbacks: {
+            label: ctx => ctx.dataset.label + ': ' + (ctx.raw ? ctx.raw + '' : '—')
+          }
+        },
+        annotation: undefined
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(0,0,0,0.04)', drawTicks: false },
+          border: { display: false },
+          ticks: { font: { size: 10 }, maxTicksLimit: 10 }
+        },
+        y: {
+          min: 80,
+          grid: { color: 'rgba(0,0,0,0.05)', drawTicks: false },
+          border: { display: false },
+          ticks: {
+            font: { size: 10 },
+            callback: v => v === 100 ? 'Entry\n100' : v
+          },
+          title: { display: true, text: 'Indexed ARR', font: { size: 10 }, color: INK3 }
+        }
+      }
+    },
+    plugins: [{
+      id: 'annotations',
+      afterDraw(chart) {
+        const { ctx: c, chartArea: { top, bottom }, scales: { x } } = chart;
+        const annots = [
+          { label: 'ICP\nredefined', idx: 3, color: TEAL },
+          { label: 'Channel\nmix shift', idx: 7, color: TEAL_D },
+          { label: 'Territory\nredesign', idx: 11, color: '#8AC4B8' }
+        ];
+        annots.forEach(a => {
+          const xPos = x.getPixelForValue(a.idx);
+          c.save();
+          c.setLineDash([3,3]);
+          c.strokeStyle = a.color;
+          c.lineWidth = 1;
+          c.globalAlpha = 0.5;
+          c.beginPath(); c.moveTo(xPos, top); c.lineTo(xPos, bottom); c.stroke();
+          c.globalAlpha = 1;
+          c.fillStyle = a.color;
+          c.font = '9px DM Sans, sans-serif';
+          c.textAlign = 'center';
+          const lines = a.label.split('\n');
+          lines.forEach((l, i) => c.fillText(l, xPos, top + 10 + i * 12));
+          c.restore();
+        });
+      }
+    }]
   });
 }
 
-function drawGroupedBar(ctx, cfg, W, H, PAD, cW, cH) {
-  const { labels, before, after, yMin: rawMin, yLabel } = cfg;
-  const yMax = Math.ceil(Math.max(...after) * 1.12 / 20) * 20;
-  const yMin = rawMin;
-  const n = labels.length;
-  const groupW = cW / n;
-  const barW = groupW * 0.32;
-  const gap = groupW * 0.06;
+// ── Slide 2: Team Productivity ───────────────────────────────────────
+function renderTeam() {
+  destroyChart('team');
+  const ctx = document.getElementById('chart-team').getContext('2d');
+  const labels = Array.from({length: 9}, (_, i) => i === 0 ? 'Entry' : 'Q' + i);
+  const revPerFte = [100, 112, 128, 148, 173, 210, 268, 340, 420];
+  const headcount = [100, 120, 135, 148, 155, 165, 172, 180, 188];
 
-  // Grid
-  for (let i = 0; i <= 5; i++) {
-    const v = yMin + (yMax - yMin) * i / 5;
-    const y = getY(v, yMin, yMax, cH, PAD.top);
-    ctx.beginPath();
-    ctx.strokeStyle = i === 0 ? 'rgba(0,0,0,.12)' : 'rgba(0,0,0,.05)';
-    ctx.lineWidth = i === 0 ? 1 : 0.5;
-    ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y);
-    ctx.stroke();
-    ctx.fillStyle = INK3; ctx.font = `9px ${FONT}`; ctx.textAlign = 'right';
-    ctx.fillText(Math.round(v), PAD.left - 5, y + 3);
-  }
-
-  // Y label
-  ctx.save();
-  ctx.translate(11, PAD.top + cH / 2);
-  ctx.rotate(-Math.PI / 2);
-  ctx.fillStyle = INK3; ctx.font = `8px ${FONT}`; ctx.textAlign = 'center';
-  ctx.fillText(yLabel, 0, 0);
-  ctx.restore();
-
-  labels.forEach((lbl, i) => {
-    const gx = PAD.left + i * groupW;
-    const midX = gx + groupW / 2;
-
-    // Before bar
-    const bVal = before[i];
-    const bY = getY(bVal, yMin, yMax, cH, PAD.top);
-    const bH = getY(yMin, yMin, yMax, cH, PAD.top) - bY;
-    ctx.fillStyle = 'rgba(200,200,196,.55)';
-    ctx.fillRect(midX - barW - gap / 2, bY, barW, bH);
-
-    // After bar — highlight last (attainment) in full teal
-    const aVal = after[i];
-    const aY = getY(aVal, yMin, yMax, cH, PAD.top);
-    const aH = getY(yMin, yMin, yMax, cH, PAD.top) - aY;
-    ctx.fillStyle = i === n - 1 ? TEAL : 'rgba(77,184,160,.6)';
-    ctx.fillRect(midX + gap / 2, aY, barW, aH);
-
-    // Value label on after bar
-    ctx.fillStyle = i === n - 1 ? TEAL_D : INK2;
-    ctx.font = `bold 8px ${FONT}`; ctx.textAlign = 'center';
-    ctx.fillText(aVal, midX + gap / 2 + barW / 2, aY - 3);
-
-    // X label (handle multi-line)
-    ctx.fillStyle = INK3; ctx.font = `8px ${FONT}`; ctx.textAlign = 'center';
-    const lines = lbl.split('\n');
-    lines.forEach((l, li) => ctx.fillText(l, midX, H - 18 + li * 10));
+  charts['team'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Revenue/FTE index',
+          data: revPerFte,
+          borderColor: TEAL,
+          backgroundColor: 'rgba(77,184,160,0.06)',
+          fill: true,
+          borderWidth: 2.5,
+          pointRadius: 3,
+          pointBackgroundColor: TEAL,
+          tension: 0.3,
+          yAxisID: 'y'
+        },
+        {
+          label: 'Headcount index',
+          data: headcount,
+          borderColor: AMBER,
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderDash: [5,3],
+          pointRadius: 2,
+          pointBackgroundColor: AMBER,
+          tension: 0.3,
+          yAxisID: 'y'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: INK,
+          padding: 10,
+          titleFont: { size: 11 },
+          bodyFont: { size: 11 }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(0,0,0,0.04)', drawTicks: false },
+          border: { display: false },
+          ticks: { font: { size: 10 } }
+        },
+        y: {
+          min: 80,
+          grid: { color: 'rgba(0,0,0,0.05)', drawTicks: false },
+          border: { display: false },
+          ticks: { font: { size: 10 }, callback: v => v },
+          title: { display: true, text: 'Index (entry = 100)', font: { size: 10 }, color: INK3 }
+        }
+      }
+    },
+    plugins: [{
+      id: 'annots',
+      afterDraw(chart) {
+        const { ctx: c, chartArea: { top, bottom }, scales: { x } } = chart;
+        [
+          { label: 'Upmarket\nreposition', idx: 2, color: TEAL_D },
+          { label: 'Motion\nsystemised', idx: 5, color: TEAL }
+        ].forEach(a => {
+          const xPos = x.getPixelForValue(a.idx);
+          c.save();
+          c.setLineDash([3,3]);
+          c.strokeStyle = a.color;
+          c.lineWidth = 1;
+          c.globalAlpha = 0.45;
+          c.beginPath(); c.moveTo(xPos, top); c.lineTo(xPos, bottom); c.stroke();
+          c.globalAlpha = 1;
+          c.fillStyle = a.color;
+          c.font = '9px DM Sans, sans-serif';
+          c.textAlign = 'center';
+          a.label.split('\n').forEach((l, i) => c.fillText(l, xPos, top + 10 + i * 12));
+          c.restore();
+        });
+      }
+    }]
   });
 }
 
-// ── RENDER ALL CHARTS ──────────────────────────────────────────────
-function renderAll() {
-  Object.entries(DATA).forEach(([id, cfg]) => renderChart(id, cfg));
+// ── Slide 3: Funnel ──────────────────────────────────────────────────
+function renderFunnel() {
+  destroyChart('funnel');
+  const ctx = document.getElementById('chart-funnel').getContext('2d');
+  const stages = ['Lead quality', 'Qualification', 'Demo/discovery', 'Proposal', 'Close rate', 'Attainment'];
+  const before = [100, 100, 100, 100, 100, 100];
+  const after  = [118, 126, 135, 148, 138, 165];
+
+  charts['funnel'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: stages,
+      datasets: [
+        {
+          label: 'At entry',
+          data: before,
+          backgroundColor: 'rgba(200,200,196,0.5)',
+          borderColor: GREY,
+          borderWidth: 1,
+          borderRadius: 3,
+          barPercentage: 0.7,
+          categoryPercentage: 0.75
+        },
+        {
+          label: 'Current',
+          data: after,
+          backgroundColor: stages.map((_, i) => i === 5 ? TEAL : 'rgba(77,184,160,0.55)'),
+          borderColor: stages.map((_, i) => i === 5 ? TEAL_D : TEAL),
+          borderWidth: 1,
+          borderRadius: 3,
+          barPercentage: 0.7,
+          categoryPercentage: 0.75
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: INK,
+          padding: 10,
+          bodyFont: { size: 11 },
+          callbacks: { label: c => c.dataset.label + ': ' + c.raw + (c.datasetIndex === 1 ? ' (+' + (c.raw - 100) + '%)' : '') }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          border: { display: false },
+          ticks: { font: { size: 9.5 } }
+        },
+        y: {
+          min: 80,
+          grid: { color: 'rgba(0,0,0,0.05)', drawTicks: false },
+          border: { display: false },
+          ticks: { font: { size: 10 }, callback: v => v === 100 ? 'Baseline' : v },
+          title: { display: true, text: 'Conversion index', font: { size: 10 }, color: INK3 }
+        }
+      }
+    }
+  });
 }
 
-// Render after DOM settles (fonts etc.)
-window.addEventListener('load', () => setTimeout(renderAll, 80));
-window.addEventListener('resize', () => setTimeout(renderAll, 80));
+// ── Slide 4: Setback ─────────────────────────────────────────────────
+function renderSetback() {
+  destroyChart('setback');
+  const ctx = document.getElementById('chart-setback').getContext('2d');
+  const labels = Array.from({length: 25}, (_, i) => i === 0 ? 'Entry' : 'M' + i);
+  // NRR story: starts at 100 (65% NRR), dips on wrong expansion push M6-10, recovers strongly
+  const nrr = [100, 98, 96, 94, 93, 91, 88, 86, 85, 87, 90, 96, 105, 115, 124, 133, 141, 148, 154, 159, 163, 166, 169, 171, 173];
+
+  charts['setback'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'NRR index',
+        data: nrr,
+        borderColor: ctx => {
+          const gradient = ctx.chart.ctx.createLinearGradient(0, 0, ctx.chart.width, 0);
+          gradient.addColorStop(0, RED);
+          gradient.addColorStop(0.45, RED);
+          gradient.addColorStop(0.55, TEAL);
+          gradient.addColorStop(1, TEAL);
+          return gradient;
+        },
+        backgroundColor: 'transparent',
+        borderWidth: 2.5,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: INK, padding: 10, bodyFont: { size: 11 } }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(0,0,0,0.03)', drawTicks: false },
+          border: { display: false },
+          ticks: { font: { size: 9.5 }, maxTicksLimit: 10 }
+        },
+        y: {
+          grid: { color: 'rgba(0,0,0,0.05)', drawTicks: false },
+          border: { display: false },
+          ticks: {
+            font: { size: 10 },
+            callback: v => v === 100 ? '100\n(65% NRR)' : v + (v === 173 ? ' (115%)' : '')
+          },
+          title: { display: true, text: 'NRR index (entry = 65% NRR → 100)', font: { size: 10 }, color: INK3 }
+        }
+      }
+    },
+    plugins: [{
+      id: 'setback-annots',
+      beforeDraw(chart) {
+        const { ctx: c, chartArea: { top, bottom }, scales: { x } } = chart;
+        // Shade the dip zone
+        const x6 = x.getPixelForValue(5);
+        const x10 = x.getPixelForValue(9);
+        c.save();
+        c.fillStyle = 'rgba(192,57,43,0.07)';
+        c.fillRect(x6, top, x10 - x6, bottom - top);
+        c.restore();
+      },
+      afterDraw(chart) {
+        const { ctx: c, chartArea: { top, bottom }, scales: { x } } = chart;
+        // Red dashed line at month 7 (failure peak)
+        const x7 = x.getPixelForValue(7);
+        c.save();
+        c.setLineDash([3,3]);
+        c.strokeStyle = RED; c.lineWidth = 1.5; c.globalAlpha = 0.6;
+        c.beginPath(); c.moveTo(x7, top); c.lineTo(x7, bottom); c.stroke();
+        c.globalAlpha = 1;
+        c.fillStyle = RED;
+        c.font = 'bold 9px DM Sans, sans-serif';
+        c.textAlign = 'center';
+        c.fillText('First expansion', x7, top + 9);
+        c.fillText('motion fails', x7, top + 20);
+        c.restore();
+
+        // Teal dashed line at month 13 (recovery)
+        const x13 = x.getPixelForValue(13);
+        c.save();
+        c.setLineDash([3,3]);
+        c.strokeStyle = TEAL; c.lineWidth = 1.5; c.globalAlpha = 0.6;
+        c.beginPath(); c.moveTo(x13, top); c.lineTo(x13, bottom); c.stroke();
+        c.globalAlpha = 1;
+        c.fillStyle = TEAL_D;
+        c.font = 'bold 9px DM Sans, sans-serif';
+        c.textAlign = 'center';
+        c.fillText('Redesigned', x13, top + 9);
+        c.fillText('activation model', x13, top + 20);
+        c.restore();
+      }
+    }]
+  });
+}
+
+// ── Slide 5: GTM Evolution ───────────────────────────────────────────
+function renderGTM() {
+  destroyChart('gtm');
+  const ctx = document.getElementById('chart-gtm').getContext('2d');
+  const labels = Array.from({length: 13}, (_, i) => i === 0 ? 'Entry' : 'M' + i);
+  const revenue   = [100, 112, 128, 148, 170, 196, 225, 252, 272, 288, 300, 308, 316];
+  const costRatio = [100, 102, 100, 96, 92, 86, 80, 73, 67, 62, 58, 55, 52];
+
+  charts['gtm'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Revenue index',
+          data: revenue,
+          borderColor: TEAL,
+          backgroundColor: 'rgba(77,184,160,0.06)',
+          fill: true,
+          borderWidth: 2.5,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.35,
+          yAxisID: 'y'
+        },
+        {
+          label: 'Cost:revenue index (lower = better)',
+          data: costRatio,
+          borderColor: AMBER,
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderDash: [5,3],
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.35,
+          yAxisID: 'y2'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: INK,
+          padding: 10,
+          bodyFont: { size: 11 },
+          callbacks: {
+            label: c => c.dataset.label + ': ' + c.raw + (c.datasetIndex === 1 ? ' ↓ better' : ' ↑')
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(0,0,0,0.04)', drawTicks: false },
+          border: { display: false },
+          ticks: { font: { size: 10 } }
+        },
+        y: {
+          min: 80,
+          position: 'left',
+          grid: { color: 'rgba(0,0,0,0.05)', drawTicks: false },
+          border: { display: false },
+          ticks: { font: { size: 10 } },
+          title: { display: true, text: 'Revenue index', font: { size: 10 }, color: TEAL_D }
+        },
+        y2: {
+          min: 40,
+          max: 110,
+          position: 'right',
+          grid: { display: false },
+          border: { display: false },
+          ticks: { font: { size: 10 } },
+          title: { display: true, text: 'Cost:revenue index ↓ better', font: { size: 10 }, color: AMBER }
+        }
+      }
+    },
+    plugins: [{
+      id: 'gtm-annots',
+      afterDraw(chart) {
+        const { ctx: c, chartArea: { top, bottom }, scales: { x } } = chart;
+        [
+          { label: 'ICP\nprecision', idx: 2, color: TEAL_D },
+          { label: 'Channel\nconcentration', idx: 5, color: TEAL_D },
+          { label: 'NRR\ninflects', idx: 9, color: AMBER }
+        ].forEach(a => {
+          const xPos = x.getPixelForValue(a.idx);
+          c.save();
+          c.setLineDash([3,3]);
+          c.strokeStyle = a.color;
+          c.lineWidth = 1;
+          c.globalAlpha = 0.45;
+          c.beginPath(); c.moveTo(xPos, top); c.lineTo(xPos, bottom); c.stroke();
+          c.globalAlpha = 1;
+          c.fillStyle = a.color;
+          c.font = '9px DM Sans, sans-serif';
+          c.textAlign = 'center';
+          a.label.split('\n').forEach((l, i) => c.fillText(l, xPos, top + 10 + i * 12));
+          c.restore();
+        });
+      }
+    }]
+  });
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────
+updateNav();
+renderARR();  // render first slide on load
 </script>
 </body>
 </html>
