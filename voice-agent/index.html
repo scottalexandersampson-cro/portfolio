@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coldroom — Mock Customer Call Trainer</title>
+<style>
+  /* ---------- Deliberate single-theme "call console" world ---------- */
+  :root{
+    --ink:#0b0e13;
+    --ink-2:#0f141c;
+    --surface:#141a23;
+    --surface-2:#19212c;
+    --line:#26303d;
+    --line-2:#334053;
+    --text:#e7ecf3;
+    --muted:#93a1b4;
+    --faint:#5f6d80;
+    --amber:#e9b06a;
+    --amber-dim:#b6844a;
+    --good:#5bb98c;
+    --warn:#e0a94b;
+    --bad:#e07070;
+    --live:#e2575c;
+    --radius:14px;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Roboto Mono",monospace;
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;font-family:var(--sans);color:var(--text);
+    background:
+      radial-gradient(1200px 700px at 78% -10%, rgba(233,176,106,.07), transparent 60%),
+      radial-gradient(900px 600px at 0% 110%, rgba(91,185,140,.05), transparent 55%),
+      var(--ink);
+    -webkit-font-smoothing:antialiased;line-height:1.5;
+  }
+  button{font-family:inherit;cursor:pointer;color:inherit}
+  input,textarea,select{font-family:inherit;color:inherit}
+  h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.01em}
+  .eyebrow{font:600 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--amber-dim)}
+  .muted{color:var(--muted)}
+  .faint{color:var(--faint)}
+  a{color:var(--amber)}
+
+  /* ---------- Shell ---------- */
+  .topbar{
+    display:flex;align-items:center;gap:14px;padding:14px 22px;
+    border-bottom:1px solid var(--line);background:rgba(11,14,19,.7);
+    position:sticky;top:0;z-index:20;backdrop-filter:blur(8px);
+  }
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.02em;font-size:16px}
+  .logo{width:26px;height:26px;border-radius:7px;position:relative;flex:0 0 auto;
+    background:linear-gradient(150deg,#2a3444,#141a23);border:1px solid var(--line-2)}
+  .logo::before{content:"";position:absolute;inset:7px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,var(--amber),var(--amber-dim));
+    box-shadow:0 0 12px rgba(233,176,106,.5)}
+  .brand small{display:block;font:500 10.5px/1.2 var(--mono);letter-spacing:.12em;color:var(--faint);text-transform:uppercase}
+  .topbar .spacer{flex:1}
+  .ghost{
+    background:transparent;border:1px solid var(--line-2);color:var(--muted);
+    padding:8px 13px;border-radius:9px;font-size:13px;font-weight:600;transition:.15s;
+  }
+  .ghost:hover{border-color:var(--amber-dim);color:var(--text)}
+  .ghost:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{
+    outline:2px solid var(--amber);outline-offset:2px}
+
+  main{max-width:1240px;margin:0 auto;padding:26px 22px 60px}
+
+  /* ---------- Setup screen ---------- */
+  .setup{display:grid;grid-template-columns:1.35fr 1fr;gap:22px}
+  @media(max-width:900px){.setup{grid-template-columns:1fr}}
+  .card{
+    background:linear-gradient(180deg,var(--surface),var(--ink-2));
+    border:1px solid var(--line);border-radius:var(--radius);padding:22px;
+  }
+  .card h2{font-size:18px;margin-bottom:3px}
+  .card .sub{color:var(--muted);font-size:13.5px;margin-bottom:18px}
+  .field{margin-bottom:15px}
+  .field label{display:block;font:600 12px/1 var(--mono);letter-spacing:.06em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:7px}
+  .field .hint{font-size:12px;color:var(--faint);margin-top:5px}
+  input[type=text],input[type=password],textarea,select{
+    width:100%;background:var(--ink);border:1px solid var(--line-2);border-radius:9px;
+    padding:10px 12px;font-size:14px;transition:.15s;
+  }
+  textarea{resize:vertical;min-height:66px;line-height:1.55}
+  input:focus,textarea:focus,select:focus{border-color:var(--amber-dim)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  @media(max-width:520px){.row{grid-template-columns:1fr}}
+
+  .presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+  .preset{
+    background:var(--surface-2);border:1px solid var(--line-2);border-radius:999px;
+    padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--muted);transition:.15s;
+  }
+  .preset:hover{border-color:var(--amber-dim);color:var(--text)}
+  .preset .p-sub{color:var(--faint);font-weight:500}
+
+  .cta{
+    width:100%;margin-top:6px;background:linear-gradient(180deg,var(--amber),var(--amber-dim));
+    color:#1a1206;border:none;border-radius:11px;padding:14px;font-size:15px;font-weight:700;
+    letter-spacing:-.01em;transition:.15s;box-shadow:0 8px 24px -12px rgba(233,176,106,.7);
+  }
+  .cta:hover{filter:brightness(1.06)}
+  .cta:disabled{opacity:.5;cursor:not-allowed;filter:none}
+
+  .keybox{display:flex;gap:10px}
+  .keybox input{flex:1}
+  .keystatus{font-size:12px;margin-top:7px;display:flex;align-items:center;gap:7px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--faint);flex:0 0 auto}
+  .dot.ok{background:var(--good);box-shadow:0 0 8px var(--good)}
+  .dot.err{background:var(--bad)}
+
+  /* ---------- Call screen ---------- */
+  .call{display:grid;grid-template-columns:1fr 380px;gap:22px}
+  @media(max-width:940px){.call{grid-template-columns:1fr}}
+
+  .persona-strip{
+    display:flex;align-items:center;gap:16px;padding:16px 20px;margin-bottom:18px;
+    border:1px solid var(--line);border-radius:var(--radius);
+    background:linear-gradient(90deg,var(--surface),var(--ink-2));
+  }
+  .avatar{width:46px;height:46px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;
+    font-weight:800;font-size:18px;color:#1a1206;
+    background:linear-gradient(150deg,var(--amber),var(--amber-dim))}
+  .persona-strip .who{flex:1;min-width:0}
+  .persona-strip .who h3{font-size:16px}
+  .persona-strip .who p{margin:2px 0 0;font-size:12.5px;color:var(--muted);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:230px}
+  .chip{font:600 11px/1 var(--mono);letter-spacing:.04em;padding:5px 9px;border-radius:6px;
+    background:var(--surface-2);border:1px solid var(--line-2);color:var(--muted);text-transform:uppercase}
+
+  .stage{
+    border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+    background:linear-gradient(180deg,var(--surface),var(--ink-2));display:flex;flex-direction:column;min-height:520px;
+  }
+  .orb-wrap{padding:26px 22px 12px;display:flex;flex-direction:column;align-items:center;gap:12px;
+    border-bottom:1px solid var(--line)}
+  .orb{
+    width:112px;height:112px;border-radius:50%;position:relative;display:grid;place-items:center;
+    background:radial-gradient(circle at 38% 32%,#2b3644,#131922);
+    border:1px solid var(--line-2);transition:.25s;
+  }
+  .orb::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid transparent;transition:.25s}
+  .orb.listening::after{border-color:var(--live);animation:pulse 1.4s ease-out infinite}
+  .orb.speaking::after{border-color:var(--amber);animation:pulse 1.4s ease-out infinite}
+  .orb.thinking::after{border-color:var(--line-2);animation:spin 1.1s linear infinite;border-top-color:var(--amber)}
+  @keyframes pulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.28);opacity:0}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media(prefers-reduced-motion:reduce){.orb::after{animation:none!important}}
+  .orb .glyph{font-size:34px}
+  .stage-status{font:600 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);min-height:14px}
+  .stage-status.live{color:var(--live)}
+  .stage-status.warn{color:var(--warn)}
+
+  .transcript{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+  .turn{max-width:88%;display:flex;flex-direction:column;gap:3px}
+  .turn .lbl{font:600 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .turn .bubble{padding:10px 13px;border-radius:12px;font-size:14px;line-height:1.5}
+  .turn.rep{align-self:flex-end;align-items:flex-end}
+  .turn.rep .bubble{background:var(--surface-2);border:1px solid var(--line-2);border-bottom-right-radius:4px}
+  .turn.cust{align-self:flex-start}
+  .turn.cust .bubble{background:linear-gradient(180deg,#20293450,#1a222d);border:1px solid var(--amber-dim);border-bottom-left-radius:4px}
+  .turn.interim .bubble{opacity:.6;font-style:italic;border-style:dashed}
+  .empty-note{margin:auto;text-align:center;color:var(--faint);font-size:13.5px;max-width:280px}
+
+  .controls{border-top:1px solid var(--line);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+  .mic-row{display:flex;gap:10px;align-items:stretch}
+  .mic{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:9px;
+    background:linear-gradient(180deg,var(--surface-2),var(--ink-2));border:1px solid var(--line-2);
+    border-radius:11px;padding:14px;font-size:14.5px;font-weight:700;transition:.15s;
+  }
+  .mic:hover{border-color:var(--amber-dim)}
+  .mic.on{background:linear-gradient(180deg,#3a1f22,#2a1518);border-color:var(--live);color:#ffd9da}
+  .mic:disabled{opacity:.45;cursor:not-allowed}
+  .mic .mic-dot{width:10px;height:10px;border-radius:50%;background:var(--live)}
+  .mic.on .mic-dot{animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:.25}}
+  .typerow{display:flex;gap:8px}
+  .typerow input{flex:1}
+  .send{background:var(--surface-2);border:1px solid var(--line-2);border-radius:9px;padding:0 15px;font-weight:700}
+  .send:hover{border-color:var(--amber-dim)}
+  .call-actions{display:flex;gap:10px;justify-content:space-between;align-items:center}
+  .autolisten{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);user-select:none}
+  .autolisten input{width:auto}
+  .end{background:transparent;border:1px solid var(--bad);color:var(--bad);border-radius:9px;
+    padding:9px 15px;font-weight:700;font-size:13px}
+  .end:hover{background:#2a1517}
+  .end:disabled{opacity:.4;cursor:not-allowed;border-color:var(--line-2);color:var(--faint)}
+
+  /* ---------- Coaching / scoring panel ---------- */
+  .panel{border:1px solid var(--line);border-radius:var(--radius);
+    background:linear-gradient(180deg,var(--surface),var(--ink-2));padding:18px;
+    display:flex;flex-direction:column;gap:16px;position:sticky;top:78px;max-height:calc(100vh - 100px);overflow-y:auto}
+  .panel h3{font-size:14px;display:flex;align-items:center;gap:8px}
+  .metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .metric{background:var(--ink-2);border:1px solid var(--line-2);border-radius:10px;padding:11px 12px}
+  .metric .k{font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .metric .v{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:5px;font-variant-numeric:tabular-nums}
+  .metric .v small{font-size:12px;font-weight:600;color:var(--muted)}
+
+  .rubric{display:flex;flex-direction:column;gap:9px}
+  .dim{background:var(--ink-2);border:1px solid var(--line-2);border-radius:10px;padding:11px 12px}
+  .dim .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .dim .name{font-size:13px;font-weight:600}
+  .dim .score{font:700 13px/1 var(--mono);font-variant-numeric:tabular-nums}
+  .bar{height:5px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden}
+  .bar span{display:block;height:100%;border-radius:3px;transition:width .5s ease}
+  .dim .cmt{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45;display:none}
+  .dim.open .cmt{display:block}
+  .dim .name::after{content:"▾";color:var(--faint);font-size:10px;margin-left:6px}
+
+  .feedback-block{background:var(--ink-2);border:1px solid var(--line-2);border-radius:10px;padding:12px}
+  .feedback-block h4{margin:0 0 8px;font:600 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase}
+  .feedback-block.more h4{color:var(--good)}
+  .feedback-block.less h4{color:var(--warn)}
+  .feedback-block ul{margin:0;padding-left:16px;font-size:12.5px;line-height:1.55;color:var(--text)}
+  .feedback-block li{margin-bottom:4px}
+  .focus{background:linear-gradient(180deg,#22181040,#1a1410);border:1px solid var(--amber-dim);border-radius:10px;padding:13px}
+  .focus .k{font:600 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--amber)}
+  .focus p{margin:7px 0 0;font-size:13.5px;line-height:1.5}
+
+  .progress-card{border:1px solid var(--line);border-radius:var(--radius);
+    background:linear-gradient(180deg,var(--surface),var(--ink-2));padding:16px 18px}
+  .progress-card .phead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+  .spark{width:100%;height:56px;display:block}
+  .trend-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:8px}
+  .delta.up{color:var(--good)} .delta.down{color:var(--bad)}
+
+  .panel .idle-note{color:var(--faint);font-size:13px;line-height:1.55;text-align:center;padding:20px 6px}
+  .grading-note{display:flex;align-items:center;gap:10px;color:var(--amber);font-size:13px}
+  .mini-spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-2);border-top-color:var(--amber);animation:spin 1s linear infinite}
+
+  .banner{margin-bottom:18px;padding:12px 15px;border-radius:11px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+  .banner.err{background:#2a1618;border:1px solid var(--bad);color:#ffc9ca}
+  .banner.info{background:#141c26;border:1px solid var(--line-2);color:var(--muted)}
+  .banner b{color:var(--text)}
+  .hidden{display:none!important}
+  .link-btn{background:none;border:none;color:var(--amber);text-decoration:underline;padding:0;font-size:inherit}
+  footer{max-width:1240px;margin:0 auto;padding:22px;color:var(--faint);font-size:12px;line-height:1.6}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo"></span>
+    <span>Coldroom<small>Mock&nbsp;Customer&nbsp;·&nbsp;Discovery&nbsp;Trainer</small></span>
+  </div>
+  <div class="spacer"></div>
+  <button class="ghost" id="btnHistory" hidden>History</button>
+  <button class="ghost" id="btnReset" hidden>New setup</button>
+</header>
+
+<main>
+  <div id="banner"></div>
+
+  <!-- ===================== SETUP ===================== -->
+  <section id="setup" class="setup">
+    <div class="card">
+      <span class="eyebrow">Brief the customer</span>
+      <h2 style="margin-top:8px">Build the person you'll be selling to</h2>
+      <p class="sub">Everything here shapes how the mock customer thinks, what they know, and how hard they are to move. Pick a starter or write your own.</p>
+
+      <div class="field">
+        <label>Quick starts</label>
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="pName">Name</label>
+          <input type="text" id="pName" placeholder="e.g. Dana Whitfield">
+        </div>
+        <div class="field">
+          <label for="pRole">Role / title</label>
+          <input type="text" id="pRole" placeholder="e.g. VP of Operations">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="pCompany">Company &amp; context</label>
+        <textarea id="pCompany" placeholder="Mid-market logistics firm, ~400 staff, growing 20% YoY. Just closed a bad quarter on delivery SLAs. Uses a legacy TMS they're frustrated with."></textarea>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="pAwareness">Awareness of you</label>
+          <select id="pAwareness">
+            <option>Cold — never heard of you or the category</option>
+            <option>Problem-aware — feels the pain, no solution in mind</option>
+            <option selected>Solution-aware — evaluating options, took this call</option>
+            <option>Product-aware — knows your product, skeptical of claims</option>
+            <option>Warm inbound — actively looking, some urgency</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pDisposition">Disposition</label>
+          <select id="pDisposition">
+            <option>Friendly and open</option>
+            <option selected>Guarded but professional</option>
+            <option>Busy and impatient</option>
+            <option>Skeptical / been burned before</option>
+            <option>Price-obsessed</option>
+            <option>Analytical, wants proof</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="pPersonality">Personality &amp; quirks</label>
+        <textarea id="pPersonality" placeholder="Dry sense of humour. Interrupts if you waffle. Warms up if you clearly did your homework. Hates buzzwords."></textarea>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="pScenario">Call scenario</label>
+          <input type="text" id="pScenario" placeholder="First discovery call, 20 mins, they double-booked">
+        </div>
+        <div class="field">
+          <label for="pDifficulty">Difficulty</label>
+          <select id="pDifficulty">
+            <option>Easy — coach mode, forgiving</option>
+            <option selected>Realistic — behaves like a real buyer</option>
+            <option>Hard — makes you earn every answer</option>
+            <option>Brutal — actively resistant, tests your composure</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="pSelling">What you're selling (your side)</label>
+        <textarea id="pSelling" placeholder="A route-optimisation platform that plugs into existing TMS and cuts failed deliveries. Sold to ops leaders. Land-and-expand, ~£40k ACV."></textarea>
+        <div class="hint">The customer won't volunteer this — it just grounds the scenario so their objections are relevant.</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:22px">
+        <span class="eyebrow">Connection</span>
+        <h2 style="margin-top:8px">Your Anthropic key</h2>
+        <p class="sub">The call and the grading run against Claude directly from your browser. Your key is stored only in this browser's local storage and sent only to <span class="mono">api.anthropic.com</span>.</p>
+        <div class="field">
+          <label for="apiKey">API key</label>
+          <div class="keybox">
+            <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+            <button class="ghost" id="toggleKey" title="Show / hide">👁</button>
+          </div>
+          <div class="keystatus"><span class="dot" id="keyDot"></span><span class="muted" id="keyMsg">No key saved yet</span></div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="convModel">Conversation model</label>
+            <select id="convModel">
+              <option value="claude-sonnet-5" selected>Sonnet 5 — fast, natural</option>
+              <option value="claude-haiku-4-5">Haiku 4.5 — fastest</option>
+              <option value="claude-opus-5">Opus 5 — most capable</option>
+            </select>
+            <div class="hint">Voice feels best with a low-latency model.</div>
+          </div>
+          <div class="field">
+            <label for="gradeModel">Grading model</label>
+            <select id="gradeModel">
+              <option value="claude-opus-5" selected>Opus 5 — rigorous</option>
+              <option value="claude-sonnet-5">Sonnet 5 — balanced</option>
+            </select>
+            <div class="hint">Scoring rewards depth over speed.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="eyebrow">Voice</span>
+        <h2 style="margin-top:8px">How you'll talk</h2>
+        <p class="sub" id="voiceSupportMsg">Speak into your mic; the customer replies out loud. You can also type if you prefer.</p>
+        <div class="field">
+          <label for="voiceSel">Customer voice</label>
+          <select id="voiceSel"><option>Loading voices…</option></select>
+        </div>
+        <div class="field">
+          <label for="rate">Speaking pace</label>
+          <input type="range" id="rate" min="0.7" max="1.3" step="0.05" value="1" style="width:100%">
+        </div>
+      </div>
+
+      <button class="cta" id="startCall" style="margin-top:22px">Start the call →</button>
+    </div>
+  </section>
+
+  <!-- ===================== CALL ===================== -->
+  <section id="callScreen" class="hidden">
+    <div class="persona-strip">
+      <div class="avatar" id="cAvatar">?</div>
+      <div class="who">
+        <h3 id="cName">Customer</h3>
+        <p id="cMeta">—</p>
+      </div>
+      <div class="chips" id="cChips"></div>
+    </div>
+
+    <div class="call">
+      <div class="stage">
+        <div class="orb-wrap">
+          <div class="orb" id="orb"><span class="glyph" id="orbGlyph">🎧</span></div>
+          <div class="stage-status" id="stageStatus">Ready when you are</div>
+        </div>
+        <div class="transcript" id="transcript">
+          <div class="empty-note" id="emptyNote">The customer is waiting. Open with a line — press <b>Talk</b> or type below. They picked up; the clock's running.</div>
+        </div>
+        <div class="controls">
+          <div class="mic-row">
+            <button class="mic" id="micBtn"><span class="mic-dot"></span><span id="micLabel">Talk</span></button>
+          </div>
+          <div class="typerow">
+            <input type="text" id="typed" placeholder="…or type what you'd say and hit Enter">
+            <button class="send" id="sendBtn">Send</button>
+          </div>
+          <div class="call-actions">
+            <label class="autolisten"><input type="checkbox" id="autoListen" checked> Auto-listen after they reply</label>
+            <button class="end" id="endBtn" disabled>End call &amp; grade →</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="panel" id="panel">
+        <div id="panelIdle" class="idle-note">
+          Live call metrics appear here.<br><br>
+          When you end the call, an independent grader scores the whole conversation against a discovery rubric and tracks you against your past calls.
+        </div>
+        <div id="panelLive" class="hidden">
+          <h3>Live metrics</h3>
+          <div class="metric-grid">
+            <div class="metric"><div class="k">Talk / Listen</div><div class="v" id="mTalk">—</div></div>
+            <div class="metric"><div class="k">Your questions</div><div class="v" id="mQ">0</div></div>
+            <div class="metric"><div class="k">Turns</div><div class="v" id="mTurns">0</div></div>
+            <div class="metric"><div class="k">Elapsed</div><div class="v" id="mTime">0:00</div></div>
+          </div>
+          <p class="faint" style="font-size:12px;text-align:center;margin:0">Grade the call to unlock the full rubric.</p>
+        </div>
+        <div id="panelGrading" class="hidden"><div class="grading-note"><span class="mini-spin"></span> Grading the call…</div></div>
+        <div id="panelResult" class="hidden"></div>
+      </aside>
+    </div>
+
+    <div class="progress-card" id="progressCard" style="margin-top:22px">
+      <div class="phead"><h3 style="font-size:14px">Your progression</h3><span class="faint" id="progCount" style="font-size:12px"></span></div>
+      <div id="progBody" class="idle-note" style="padding:8px">No graded calls yet — finish one to start your trend line.</div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Runs entirely in your browser. Voice uses the Web Speech API (best in Chrome/Edge). Conversation and grading call the Anthropic Messages API directly with the key you provide.
+  <span id="fnote"></span>
+</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   Coldroom — mock-customer discovery trainer
+   Single-file, runs in the browser, talks straight to the
+   Anthropic Messages API with the user's own key.
+   ============================================================ */
+
+const $ = s => document.querySelector(s);
+const LS = {
+  key:'coldroom.apikey', persona:'coldroom.persona',
+  history:'coldroom.history', prefs:'coldroom.prefs'
+};
+
+/* ---------- Rubric definition (also drives the grader schema) ---------- */
+const RUBRIC = [
+  ["opening","Rapport & opening","Set a human tone, earned the right to ask"],
+  ["discovery","Discovery & questioning","Open, layered questions that dig"],
+  ["listening","Active listening","Built on their answers, didn't just wait to talk"],
+  ["pain","Pain & value","Surfaced real cost of the problem, not features"],
+  ["qualify","Qualification","Budget, authority, need, timing — earned, not interrogated"],
+  ["objection","Objection handling","Stayed calm, reframed, didn't get defensive"],
+  ["control","Control & next steps","Drove the call, closed to a concrete next step"]
+];
+
+const RUBRIC_SCHEMA = {
+  type:"object",
+  additionalProperties:false,
+  required:["overall","headline","dimensions","do_more","do_less","focus"],
+  properties:{
+    overall:{type:"integer",description:"0-100 overall discovery-call score"},
+    headline:{type:"string",description:"One-sentence verdict on the call"},
+    dimensions:{
+      type:"array",
+      items:{
+        type:"object",additionalProperties:false,
+        required:["key","score","comment"],
+        properties:{
+          key:{type:"string",enum:RUBRIC.map(r=>r[0])},
+          score:{type:"integer",description:"1-5 for this dimension"},
+          comment:{type:"string",description:"Specific, quoting or paraphrasing the rep where useful"}
+        }
+      }
+    },
+    do_more:{type:"array",items:{type:"string"},description:"2-3 concrete behaviours to do MORE of"},
+    do_less:{type:"array",items:{type:"string"},description:"2-3 concrete behaviours to do LESS of"},
+    focus:{type:"string",description:"The single most valuable thing to fix on the next call"}
+  }
+};
+
+/* ---------- Preset personas ---------- */
+const PRESETS = [
+  {label:"Skeptical CFO", sub:"hard to move",
+   d:{pName:"Marcus Bell",pRole:"CFO",pCompany:"SaaS scale-up, Series C, 600 staff. Under board pressure to cut spend and consolidate tools this year.",
+      pAwareness:"Product-aware — knows your product, skeptical of claims",pDisposition:"Skeptical / been burned before",
+      pPersonality:"Terse. Wants numbers, not adjectives. Openly distrusts vendor ROI claims after a failed rollout last year. Softens only for peers who talk margin, not features.",
+      pScenario:"Second call — was pulled in by his ops lead",pDifficulty:"Hard — makes you earn every answer"}},
+  {label:"Busy Founder", sub:"double-booked",
+   d:{pName:"Priya Anand",pRole:"Founder & CEO",pCompany:"Early-stage D2C brand, 25 people, growing fast and chaotic. Everything is on fire, nothing is documented.",
+      pAwareness:"Problem-aware — feels the pain, no solution in mind",pDisposition:"Busy and impatient",
+      pPersonality:"Talks fast, jumps topics, checks the time. Rewards anyone who gets to the point. Will hang up on a pitch, will lean in for a sharp question.",
+      pScenario:"Squeezed a 15-min call between meetings",pDifficulty:"Realistic — behaves like a real buyer"}},
+  {label:"Guarded Ops Manager", sub:"non-committal",
+   d:{pName:"Dana Whitfield",pRole:"Head of Operations",pCompany:"Mid-market logistics firm, ~400 staff. Missed delivery SLAs last quarter; uses a legacy TMS everyone hates but nobody wants to rip out.",
+      pAwareness:"Solution-aware — evaluating options, took this call",pDisposition:"Guarded but professional",
+      pPersonality:"Polite but gives little away early. Warms up if you clearly did your homework. Hates buzzwords and 'circle back' energy.",
+      pScenario:"First discovery call, 20 minutes",pDifficulty:"Realistic — behaves like a real buyer"}},
+  {label:"Price-Focused Procurement", sub:"brutal",
+   d:{pName:"Sofia Reyes",pRole:"Senior Procurement Lead",pCompany:"Enterprise manufacturer, rigid buying process, three-vendor rule. Every deal goes to competitive tender.",
+      pAwareness:"Solution-aware — evaluating options, took this call",pDisposition:"Price-obsessed",
+      pPersonality:"Anchors on discount within two minutes. Deflects value talk back to line-item cost. Respects reps who hold their price with a straight reason.",
+      pScenario:"Vendor screening call before RFP shortlist",pDifficulty:"Brutal — actively resistant, tests your composure"}}
+];
+
+/* ---------- App state ---------- */
+const state = {
+  apiKey:'', convModel:'claude-sonnet-5', gradeModel:'claude-opus-5',
+  persona:null, convo:[], // {role:'user'(rep)|'assistant'(customer), content}
+  startedAt:0, timer:null, busy:false, ended:false,
+  voice:null, rate:1, recog:null, listening:false, autoListen:true
+};
+
+/* ============================================================
+   SETUP SCREEN
+   ============================================================ */
+function initPresets(){
+  const wrap = $('#presets');
+  PRESETS.forEach(p=>{
+    const b=document.createElement('button');
+    b.className='preset'; b.type='button';
+    b.innerHTML = p.label+' <span class="p-sub">· '+p.sub+'</span>';
+    b.onclick=()=>{ for(const k in p.d){ const el=$('#'+k); if(el) el.value=p.d[k]; } };
+    wrap.appendChild(b);
+  });
+}
+
+function loadSaved(){
+  const savedKey = localStorage.getItem(LS.key);
+  if(savedKey){ $('#apiKey').value=savedKey; markKey(true,'Key loaded from this browser'); }
+  const prefs = safeParse(localStorage.getItem(LS.prefs));
+  if(prefs){
+    if(prefs.convModel) $('#convModel').value=prefs.convModel;
+    if(prefs.gradeModel) $('#gradeModel').value=prefs.gradeModel;
+    if(prefs.rate!=null) $('#rate').value=prefs.rate;
+    if(prefs.autoListen!=null) $('#autoListen') && ($('#autoListen').checked=prefs.autoListen);
+  }
+  const per = safeParse(localStorage.getItem(LS.persona));
+  if(per){ for(const k in per){ const el=$('#'+k); if(el) el.value=per[k]; } }
+}
+
+function markKey(ok,msg){
+  const dot=$('#keyDot');
+  dot.className='dot'+(ok===true?' ok':ok===false&&msg?' err':'');
+  $('#keyMsg').textContent=msg;
+}
+
+function readPersona(){
+  const g=id=>$('#'+id).value.trim();
+  return {
+    pName:g('pName')||'Customer', pRole:g('pRole')||'Decision-maker',
+    pCompany:g('pCompany'), pAwareness:$('#pAwareness').value,
+    pDisposition:$('#pDisposition').value, pPersonality:g('pPersonality'),
+    pScenario:g('pScenario'), pDifficulty:$('#pDifficulty').value, pSelling:g('pSelling')
+  };
+}
+
+/* ---------- Voices ---------- */
+function loadVoices(){
+  const sel=$('#voiceSel'); const voices=speechSynthesis.getVoices();
+  if(!voices.length) return;
+  sel.innerHTML='';
+  const en = voices.filter(v=>/^en/i.test(v.lang));
+  (en.length?en:voices).forEach((v,i)=>{
+    const o=document.createElement('option'); o.value=v.name;
+    o.textContent=v.name+' ('+v.lang+')'; sel.appendChild(o);
+  });
+  const pref = (safeParse(localStorage.getItem(LS.prefs))||{}).voice;
+  if(pref && [...sel.options].some(o=>o.value===pref)) sel.value=pref;
+}
+
+/* ============================================================
+   ANTHROPIC API
+   ============================================================ */
+async function anthropic(body){
+  const res = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'content-type':'application/json',
+      'x-api-key':state.apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify(body)
+  });
+  if(!res.ok){
+    let detail='';
+    try{ const j=await res.json(); detail=j.error?.message||JSON.stringify(j); }
+    catch{ detail=await res.text(); }
+    throw new Error('HTTP '+res.status+' — '+detail);
+  }
+  const data=await res.json();
+  return data.content.filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+}
+
+function buildSystemPrompt(){
+  const p=state.persona;
+  return `You are role-playing a real B2B buyer on a live sales call. You are NOT an AI assistant and you never break character.
+
+# Who you are
+- Name: ${p.name}
+- Role: ${p.role}
+- Company & context: ${p.company||'(unspecified — improvise something plausible and stay consistent)'}
+- How aware you are of the seller: ${p.awareness}
+- Disposition today: ${p.disposition}
+- Personality & quirks: ${p.personality||'(a normal, busy professional)'}
+- Scenario: ${p.scenario||'a first sales call'}
+
+# What the seller is selling (for your context only — do NOT recite this)
+${p.selling||'(unknown — react to whatever they pitch)'}
+
+# How to behave — difficulty: ${p.difficulty}
+- Speak the way a real person speaks on a call: 1–4 sentences, natural, sometimes clipped.
+- Reveal information only when the rep earns it with a good question. Do not volunteer your pain, budget, or timeline unprompted.
+- If the rep pitches features before understanding you, get less interested. If they ask sharp, specific questions, warm up.
+- Raise realistic objections that fit your disposition. Don't be a pushover, but don't be a cartoon either.
+- If they ask you to hold or the call is going nowhere, you may signal impatience or start to disengage.
+- Stay 100% consistent with the facts above; invent supporting detail as needed and remember it.
+
+# Output rules (critical)
+- Output ONLY the words you say out loud, as plain text.
+- No narration, no stage directions, no asterisks, no parentheticals, no XML/markdown tags, no "As the customer…". Just speech.
+- Never coach the rep, never rate them, never mention you are an exercise or a model.`;
+}
+
+async function customerReply(){
+  return anthropic({
+    model:state.convModel,
+    max_tokens:400,
+    system:buildSystemPrompt(),
+    thinking:{type:'disabled'},   // keep spoken replies snappy
+    messages:state.convo
+  });
+}
+
+/* Grader: independent pass over the transcript, structured output */
+function transcriptText(){
+  return state.convo.map(m=>(m.role==='user'?'REP: ':'CUSTOMER: ')+m.content).join('\n');
+}
+async function gradeCall(){
+  const p=state.persona;
+  const rubricList = RUBRIC.map(r=>`- ${r[1]} (key: ${r[0]}): ${r[2]}`).join('\n');
+  const sys = `You are a demanding but fair sales coach grading a DISCOVERY / commercial call transcript. You score the REP only. You never grade the customer. Be specific and reference what the rep actually said. Be honest — most real reps score 2-3 out of 5 on most dimensions. Reserve 5s for genuinely excellent execution.`;
+  const usr = `Score this call against the rubric.
+
+CUSTOMER BRIEF (who the rep was up against):
+Role: ${p.role}. Disposition: ${p.disposition}. Awareness: ${p.awareness}. Difficulty: ${p.difficulty}.
+Scenario: ${p.scenario||'sales call'}.
+
+RUBRIC (score each 1-5):
+${rubricList}
+
+TRANSCRIPT:
+${transcriptText()}
+
+Grade every rubric dimension, give an overall 0-100 that reflects real-world call quality (not grade inflation), a one-line headline verdict, 2-3 concrete "do more" behaviours, 2-3 "do less" behaviours, and the single highest-value focus for the next call. Comments should be concrete and coachable, quoting or paraphrasing the rep where useful.`;
+  return anthropic({
+    model:state.gradeModel,
+    max_tokens:2000,
+    system:sys,
+    messages:[{role:'user',content:usr}],
+    output_config:{format:{type:'json_schema',schema:RUBRIC_SCHEMA}}
+  });
+}
+
+/* ============================================================
+   CALL FLOW
+   ============================================================ */
+function startCall(){
+  banner('');
+  state.apiKey=$('#apiKey').value.trim();
+  if(!state.apiKey){ banner('Add your Anthropic API key first.','err'); $('#apiKey').focus(); return; }
+  state.convModel=$('#convModel').value;
+  state.gradeModel=$('#gradeModel').value;
+  state.rate=parseFloat($('#rate').value);
+  state.autoListen=$('#autoListen') ? $('#autoListen').checked : true;
+  const voiceName=$('#voiceSel').value;
+  state.voice=speechSynthesis.getVoices().find(v=>v.name===voiceName)||null;
+
+  const f=readPersona();
+  state.persona={
+    name:f.pName, role:f.pRole, company:f.pCompany, awareness:f.pAwareness,
+    disposition:f.pDisposition, personality:f.pPersonality, scenario:f.pScenario,
+    difficulty:f.pDifficulty, selling:f.pSelling
+  };
+  state.convo=[]; state.ended=false; state.busy=false;
+
+  // persist
+  localStorage.setItem(LS.key,state.apiKey);
+  localStorage.setItem(LS.persona,JSON.stringify(f));
+  localStorage.setItem(LS.prefs,JSON.stringify({
+    convModel:state.convModel,gradeModel:state.gradeModel,rate:state.rate,
+    autoListen:state.autoListen,voice:voiceName
+  }));
+
+  // paint persona strip
+  $('#cAvatar').textContent=(state.persona.name[0]||'?').toUpperCase();
+  $('#cName').textContent=state.persona.name;
+  $('#cMeta').textContent=[state.persona.role, state.persona.company].filter(Boolean).join(' · ')||state.persona.role;
+  const chips=$('#cChips'); chips.innerHTML='';
+  [state.persona.disposition.split(' ')[0], state.persona.awareness.split(' —')[0], state.persona.difficulty.split(' —')[0]]
+    .forEach(t=>{const c=document.createElement('span');c.className='chip';c.textContent=t;chips.appendChild(c);});
+
+  // switch views
+  $('#setup').classList.add('hidden');
+  $('#callScreen').classList.remove('hidden');
+  $('#btnHistory').hidden=false; $('#btnReset').hidden=false;
+  $('#transcript').innerHTML='<div class="empty-note" id="emptyNote">The customer picked up. Open with a line — press <b>Talk</b> or type below.</div>';
+  $('#panelIdle').classList.add('hidden'); $('#panelLive').classList.remove('hidden');
+  $('#panelResult').classList.add('hidden'); $('#panelGrading').classList.add('hidden');
+  $('#endBtn').disabled=true;
+  renderProgress();
+
+  state.startedAt=Date.now();
+  clearInterval(state.timer);
+  state.timer=setInterval(updateLiveMetrics,1000);
+  setStatus('Ready when you are','');
+  setOrb('idle','🎧');
+}
+
+/* ----- send a rep utterance and get the reply ----- */
+async function repSays(text){
+  text=text.trim();
+  if(!text || state.busy || state.ended) return;
+  $('#emptyNote')?.remove();
+  addTurn('rep',text);
+  state.convo.push({role:'user',content:text});
+  $('#endBtn').disabled=false;
+  updateLiveMetrics();
+
+  state.busy=true; setOrb('thinking','💭'); setStatus(state.persona.name+' is thinking…','');
+  disableInputs(true);
+  try{
+    const reply=await customerReply();
+    const clean=stripDirections(reply)|| '…';
+    state.convo.push({role:'assistant',content:clean});
+    addTurn('cust',clean);
+    updateLiveMetrics();
+    await speak(clean);
+    if(state.autoListen && speechAvailable() && !state.ended){ setTimeout(()=>startListening(),250); }
+    else { setOrb('idle','🎧'); setStatus('Your move',''); }
+  }catch(err){
+    banner('Call error: '+err.message,'err');
+    setOrb('idle','🎧'); setStatus('Error — see banner','warn');
+  }finally{
+    state.busy=false; disableInputs(false);
+  }
+}
+
+function stripDirections(t){
+  return t.replace(/\*[^*]*\*/g,'')           // *stage directions*
+          .replace(/\((?:sigh|pause|laugh|beat|chuckle)[^)]*\)/gi,'')
+          .replace(/<[^>]+>/g,'')             // stray tags
+          .replace(/\s{2,}/g,' ').trim();
+}
+
+/* ----- end + grade ----- */
+async function endCall(){
+  if(state.ended) return;
+  if(state.convo.length<2){ banner('Have at least a short exchange before grading.','info'); return; }
+  state.ended=true; clearInterval(state.timer); stopListening(); speechSynthesis.cancel();
+  setOrb('idle','📊'); setStatus('Call ended','');
+  disableInputs(true); $('#micBtn').disabled=true; $('#endBtn').disabled=true;
+  $('#panelLive').classList.add('hidden'); $('#panelGrading').classList.remove('hidden');
+  try{
+    const raw=await gradeCall();
+    const grade=JSON.parse(raw);
+    grade.ts=Date.now();
+    grade.persona={name:state.persona.name,role:state.persona.role,difficulty:state.persona.difficulty};
+    grade.metrics=liveMetrics();
+    saveGrade(grade);
+    renderResult(grade);
+    renderProgress();
+  }catch(err){
+    banner('Grading failed: '+err.message,'err');
+    $('#panelGrading').classList.add('hidden');
+  }
+}
+
+/* ============================================================
+   METRICS
+   ============================================================ */
+function liveMetrics(){
+  const words = arr => arr.reduce((n,t)=>n+t.trim().split(/\s+/).filter(Boolean).length,0);
+  const rep = state.convo.filter(m=>m.role==='user').map(m=>m.content);
+  const cust = state.convo.filter(m=>m.role==='assistant').map(m=>m.content);
+  const rW=words(rep), cW=words(cust), tot=rW+cW;
+  const q = rep.reduce((n,t)=>n+(t.match(/\?/g)||[]).length,0);
+  return { repWords:rW, custWords:cW, talkPct: tot?Math.round(rW/tot*100):0,
+           questions:q, turns:rep.length, seconds:Math.round((Date.now()-state.startedAt)/1000) };
+}
+function updateLiveMetrics(){
+  const m=liveMetrics();
+  $('#mTalk').innerHTML = m.repWords+m.custWords ? (m.talkPct+'<small>%</small>') : '—';
+  $('#mQ').textContent=m.questions;
+  $('#mTurns').textContent=m.turns;
+  $('#mTime').textContent=fmtTime(m.seconds);
+}
+
+/* ============================================================
+   RENDERING
+   ============================================================ */
+function addTurn(who,text){
+  const wrap=$('#transcript');
+  const t=document.createElement('div'); t.className='turn '+who;
+  t.innerHTML=`<span class="lbl">${who==='rep'?'You':state.persona.name}</span><div class="bubble"></div>`;
+  t.querySelector('.bubble').textContent=text;
+  wrap.appendChild(t); wrap.scrollTop=wrap.scrollHeight;
+}
+let interimEl=null;
+function showInterim(text){
+  if(!text){ interimEl?.remove(); interimEl=null; return; }
+  if(!interimEl){
+    interimEl=document.createElement('div'); interimEl.className='turn rep interim';
+    interimEl.innerHTML='<span class="lbl">You</span><div class="bubble"></div>';
+    $('#transcript').appendChild(interimEl);
+  }
+  interimEl.querySelector('.bubble').textContent=text;
+  $('#transcript').scrollTop=$('#transcript').scrollHeight;
+}
+
+function scoreColor(s){ return s>=4?'var(--good)':s>=3?'var(--warn)':'var(--bad)'; }
+
+function renderResult(g){
+  $('#panelGrading').classList.add('hidden');
+  const box=$('#panelResult'); box.classList.remove('hidden');
+  const byKey=Object.fromEntries(g.dimensions.map(d=>[d.key,d]));
+  const ovColor = g.overall>=70?'var(--good)':g.overall>=45?'var(--warn)':'var(--bad)';
+
+  let html=`
+    <h3>Call score</h3>
+    <div class="metric-grid">
+      <div class="metric"><div class="k">Overall</div><div class="v" style="color:${ovColor}">${g.overall}<small>/100</small></div></div>
+      <div class="metric"><div class="k">Talk / Listen</div><div class="v">${g.metrics.talkPct}<small>% you</small></div></div>
+    </div>
+    <p class="muted" style="font-size:13px;margin:2px 0 4px;line-height:1.5">${escapeHtml(g.headline)}</p>
+    <div class="rubric">`;
+  RUBRIC.forEach(([k,name])=>{
+    const d=byKey[k]; if(!d) return;
+    const pct=(d.score/5)*100;
+    html+=`<div class="dim" data-k="${k}">
+      <div class="top"><span class="name">${name}</span><span class="score" style="color:${scoreColor(d.score)}">${d.score}/5</span></div>
+      <div class="bar"><span style="width:${pct}%;background:${scoreColor(d.score)}"></span></div>
+      <div class="cmt">${escapeHtml(d.comment)}</div>
+    </div>`;
+  });
+  html+=`</div>
+    <div class="feedback-block more"><h4>Do more of</h4><ul>${(g.do_more||[]).map(x=>'<li>'+escapeHtml(x)+'</li>').join('')}</ul></div>
+    <div class="feedback-block less"><h4>Do less of</h4><ul>${(g.do_less||[]).map(x=>'<li>'+escapeHtml(x)+'</li>').join('')}</ul></div>
+    <div class="focus"><div class="k">Focus for next call</div><p>${escapeHtml(g.focus)}</p></div>
+    <button class="cta" id="againBtn" style="margin-top:4px">Run another call →</button>`;
+  box.innerHTML=html;
+  box.querySelectorAll('.dim').forEach(el=>el.querySelector('.name').onclick=()=>el.classList.toggle('open'));
+  $('#againBtn').onclick=()=>{ resetToSetup(); };
+  setStatus('Graded · scroll the panel',''); setOrb('idle','✓');
+}
+
+/* ---------- Progress across calls ---------- */
+function getHistory(){ return safeParse(localStorage.getItem(LS.history))||[]; }
+function saveGrade(g){ const h=getHistory(); h.push(g); localStorage.setItem(LS.history,JSON.stringify(h.slice(-100))); }
+
+function renderProgress(){
+  const h=getHistory(); const card=$('#progBody'); const cnt=$('#progCount');
+  cnt.textContent=h.length?`${h.length} call${h.length>1?'s':''} logged`:'';
+  if(!h.length){ card.className='idle-note'; card.style.padding='8px';
+    card.textContent='No graded calls yet — finish one to start your trend line.'; return; }
+  const scores=h.map(x=>x.overall);
+  const last=scores[scores.length-1], prev=scores.length>1?scores[scores.length-2]:null;
+  const avg=Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+  const best=Math.max(...scores);
+
+  // per-dimension trend: average of last 3 vs first 3 (or all)
+  const dimAvg=(list)=>{ const m={}; RUBRIC.forEach(([k])=>m[k]=[]);
+    list.forEach(g=>g.dimensions?.forEach(d=>{if(m[d.key])m[d.key].push(d.score);}));
+    return RUBRIC.map(([k,name])=>{const a=m[k];return{name,v:a.length?a.reduce((x,y)=>x+y,0)/a.length:0};}); };
+  const recent=dimAvg(h.slice(-3));
+  const strongest=[...recent].sort((a,b)=>b.v-a.v)[0];
+  const weakest=[...recent].sort((a,b)=>a.v-b.v)[0];
+
+  card.className=''; card.style.padding='0';
+  const delta = prev!=null ? last-prev : null;
+  card.innerHTML=`
+    <svg class="spark" viewBox="0 0 300 56" preserveAspectRatio="none" role="img" aria-label="score history">${sparkPath(scores)}</svg>
+    <div class="trend-row">
+      <span>Latest <b style="color:var(--text)">${last}</b>${delta!=null?` <span class="delta ${delta>=0?'up':'down'}">${delta>=0?'▲':'▼'} ${Math.abs(delta)}</span>`:''}</span>
+      <span>Avg <b style="color:var(--text)">${avg}</b></span>
+      <span>Best <b style="color:var(--text)">${best}</b></span>
+    </div>
+    <div class="trend-row" style="margin-top:6px">
+      <span>Recent strength: <b style="color:var(--good)">${strongest.name}</b></span>
+      <span>Work on: <b style="color:var(--warn)">${weakest.name}</b></span>
+    </div>`;
+}
+function sparkPath(scores){
+  const w=300,h=56,pad=4;
+  const n=scores.length;
+  const x=i=>n<=1?w/2:pad+(i/(n-1))*(w-2*pad);
+  const y=v=>h-pad-(v/100)*(h-2*pad);
+  const pts=scores.map((s,i)=>[x(i),y(s)]);
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=`${line} L ${x(n-1).toFixed(1)} ${h} L ${x(0).toFixed(1)} ${h} Z`;
+  const dots=pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.4" fill="var(--amber)"/>`).join('');
+  return `<defs><linearGradient id="sg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="rgba(233,176,106,.35)"/><stop offset="1" stop-color="rgba(233,176,106,0)"/></linearGradient></defs>
+    <path d="${area}" fill="url(#sg)"/>
+    <path d="${line}" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}`;
+}
+
+/* ============================================================
+   SPEECH — recognition + synthesis
+   ============================================================ */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+function speechAvailable(){ return !!SR; }
+
+function initRecognition(){
+  if(!SR) return null;
+  const r=new SR();
+  r.continuous=true; r.interimResults=true; r.lang='en-US';
+  let finalText='';
+  r.onresult=e=>{
+    let interim='';
+    finalText='';
+    for(let i=0;i<e.results.length;i++){
+      const res=e.results[i];
+      if(res.isFinal) finalText+=res[0].transcript+' ';
+      else interim+=res[0].transcript;
+    }
+    showInterim((finalText+interim).trim());
+    r._final=finalText.trim();
+  };
+  r.onerror=e=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      banner('Microphone blocked. Allow mic access, or type instead.','err');
+    }
+    stopListening();
+  };
+  r.onend=()=>{
+    if(state.listening){ // stopped by user or silence
+      const txt=(r._final||'').trim(); r._final='';
+      state.listening=false; paintMic(false); showInterim('');
+      if(txt) repSays(txt); else { setOrb('idle','🎧'); setStatus('Your move',''); }
+    }
+  };
+  return r;
+}
+function startListening(){
+  if(!state.recog){ state.recog=initRecognition(); }
+  if(!state.recog || state.listening || state.busy || state.ended) return;
+  try{
+    state.recog._final=''; state.recog.start();
+    state.listening=true; paintMic(true);
+    setOrb('listening','🎙'); setStatus('Listening…','live');
+  }catch(e){ /* start called too fast — ignore */ }
+}
+function stopListening(){
+  if(!state.recog) return;
+  if(state.listening){ state.listening=true; try{state.recog.stop();}catch{} }
+}
+function toggleMic(){
+  if(!speechAvailable()){ $('#typed').focus(); return; }
+  if(state.listening){ state.recog._committed=true; try{state.recog.stop();}catch{} }
+  else startListening();
+}
+function paintMic(on){
+  $('#micBtn').classList.toggle('on',on);
+  $('#micLabel').textContent=on?'Listening — tap to send':'Talk';
+}
+
+function speak(text){
+  return new Promise(resolve=>{
+    if(!('speechSynthesis' in window)){ resolve(); return; }
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    if(state.voice) u.voice=state.voice;
+    u.rate=state.rate; u.pitch=1;
+    u.onstart=()=>{ setOrb('speaking','🗣'); setStatus(state.persona.name+' is speaking…',''); };
+    u.onend=()=>resolve(); u.onerror=()=>resolve();
+    speechSynthesis.speak(u);
+  });
+}
+
+/* ============================================================
+   SMALL UI HELPERS
+   ============================================================ */
+function setOrb(cls,glyph){ const o=$('#orb'); o.className='orb '+cls; $('#orbGlyph').textContent=glyph; }
+function setStatus(t,cls){ const s=$('#stageStatus'); s.textContent=t; s.className='stage-status'+(cls?' '+cls:''); }
+function disableInputs(dis){
+  $('#micBtn').disabled=dis; $('#typed').disabled=dis; $('#sendBtn').disabled=dis;
+  if(state.ended){ $('#micBtn').disabled=true; }
+}
+function banner(msg,type){
+  const b=$('#banner');
+  if(!msg){ b.innerHTML=''; return; }
+  b.innerHTML=`<div class="banner ${type||'info'}"><span>${escapeHtml(msg)}</span></div>`;
+  if(type!=='err') setTimeout(()=>{ if(b.firstChild) b.innerHTML=''; },6000);
+}
+function resetToSetup(){
+  clearInterval(state.timer); stopListening(); speechSynthesis.cancel();
+  state.ended=true;
+  $('#callScreen').classList.add('hidden'); $('#setup').classList.remove('hidden');
+  $('#btnHistory').hidden=false; $('#btnReset').hidden=true;
+  banner('');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function fmtTime(s){ return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function safeParse(s){ try{ return JSON.parse(s); }catch{ return null; } }
+
+/* ---------- History viewer ---------- */
+function showHistory(){
+  const h=getHistory();
+  if(!h.length){ banner('No graded calls saved yet.','info'); return; }
+  const lines=h.slice(-12).reverse().map(g=>{
+    const d=new Date(g.ts).toLocaleString();
+    return `${g.overall}/100 · ${g.persona?.name||'?'} (${g.persona?.role||''}) · ${d}`;
+  }).join('\n');
+  banner('Recent calls — '+h.length+' total. '+ 'Latest first below the panel.','info');
+  alert('Coldroom — call history\n\n'+lines+'\n\n(Full detail is in your progression chart.)');
+}
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+function wire(){
+  initPresets(); loadSaved();
+  if(speechSynthesis.getVoices().length) loadVoices();
+  speechSynthesis.onvoiceschanged=loadVoices;
+
+  if(!speechAvailable()){
+    $('#voiceSupportMsg').innerHTML='⚠️ Your browser doesn\'t support speech recognition (try Chrome or Edge). You can still run the whole trainer by <b>typing</b> — the customer will speak back.';
+  }
+
+  $('#toggleKey').onclick=()=>{ const i=$('#apiKey'); i.type=i.type==='password'?'text':'password'; };
+  $('#apiKey').addEventListener('input',()=>markKey(null,$('#apiKey').value.trim()?'Ready':'No key saved yet'));
+
+  $('#startCall').onclick=startCall;
+  $('#micBtn').onclick=toggleMic;
+  $('#sendBtn').onclick=()=>{ const v=$('#typed').value; $('#typed').value=''; repSays(v); };
+  $('#typed').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); const v=$('#typed').value; $('#typed').value=''; repSays(v); } });
+  $('#endBtn').onclick=endCall;
+  $('#btnReset').onclick=resetToSetup;
+  $('#btnHistory').onclick=showHistory;
+
+  // stop speech if the tab is hidden
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden) speechSynthesis.cancel(); });
+}
+wire();
+</script>
+</body>
+</html>
